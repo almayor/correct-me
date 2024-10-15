@@ -49,6 +49,7 @@ library:
                     , ConstraintKinds
                     , FlexibleContexts
                     , TypeApplications
+                    , RecordWildCardstypecheck
 
 executables:
   correct-me-v2-exe:

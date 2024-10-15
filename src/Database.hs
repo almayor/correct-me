@@ -19,6 +19,7 @@ import Data.Time (UTCTime)
 import Lib
 import Error
 import Types
+import Password
 
 import Control.Monad.IO.Class (liftIO)
 import GHC.Generics (Generic)

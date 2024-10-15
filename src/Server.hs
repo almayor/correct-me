@@ -1,28 +1,25 @@
 module Server where
 
-import Servant
-import Lib
-import Database
-import Types
+import Control.Monad (when)
+import Control.Monad.Reader (asks)
 import Data.Text (Text)
 import qualified Data.Text as T
-import Control.Monad.Reader (asks)
-import Control.Monad (when)
-
-import Error
 import qualified Data.Text.Encoding as T
-import Password
 import Network.Wai.Handler.Warp (run)
+import Servant
+
+import Database
+import Error
+import Monad
+import Password
+import Types
 
 
 server :: ServerT API App
-server = register :<|> test-- :<|> access
+server = register :<|> access
 
-test :: App NoContent
-test = return NoContent
-
--- access :: UserID -> App NoContent
--- access = undefined
+access :: UserID -> App NoContent
+access = undefined
 
 -- userExists username = do
 --     pool <- asks envDbPool
@@ -52,8 +49,8 @@ register :: UserReq -> App EntryID
 register (UserReq username password) = do
     exists <- execute userExistsSt username
     when exists userAlreadyExistsError
-    execute insertUserSt (username, password)
-
+    pwdHash <- mkPasswordHash password
+    execute insertUserSt (username, pwdHash)
 
 -- application :: Env -> Application
 -- application env =
@@ -67,10 +64,35 @@ main' = do
     env <- mkEnv config
 
     let ctx = BasicAuthCheck (authenticate env) :. EmptyContext
-        api = Proxy @API
-        -- app = serveWithContext api ctx $ (hoistServerWithContext api (runAppAsHandler env) server)
-        app = serve api $ hoistServer api (runAppAsHandler env) server
+        hoistedServer = hoistServerWithContext api_proxy auth_proxy (runAppAsHandler env) server
+        app = serveWithContext api_proxy ctx hoistedServer
 
     run 8080 app
 
+    where
+        api_proxy = Proxy :: Proxy API
+        auth_proxy = Proxy :: Proxy '[BasicAuthCheck UserID]
 
+
+application :: Env -> Application
+application env = 
+    let ctx = BasicAuthCheck (authenticate env) :. EmptyContext
+        hoistedServer = hoistServerWithContext
+            (Proxy @API)
+            (Proxy @'[BasicAuthCheck UserID])
+            (runAppAsHandler env)
+            server
+    in serveWithContext (Proxy @API) ctx hoistedServer
+    
+
+runServer :: Env -> IO ()
+runServer env = do
+    let ctx = BasicAuthCheck (authenticate env) :. EmptyContext
+        hoistedServer = hoistServerWithContext api_proxy auth_proxy (runAppAsHandler env) server
+        app = serveWithContext api_proxy ctx hoistedServer
+
+    run 8080 app
+
+    where
+        api_proxy = Proxy :: Proxy API
+        auth_proxy = Proxy :: Proxy '[BasicAuthCheck UserID]

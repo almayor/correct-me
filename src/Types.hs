@@ -16,9 +16,8 @@ data UserReq = UserReq
     , userReqPassword :: Text
     } deriving (Show, Generic)
 
-$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 4} ''UserReq)
+$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 7} ''UserReq)
 
 type RegisterAPI = "register" :> ReqBody '[JSON] UserReq :> Post '[JSON] UserID
-type TestAPI = "test" :> GetNoContent
 type AccessAPI = BasicAuth "access" UserID :> GetNoContent
-type API = RegisterAPI :<|> TestAPI -- :<|> AccessAPI
+type API = RegisterAPI :<|> AccessAPI
