@@ -1,0 +1,103 @@
+name:                correct-me-v2
+version:             0.1.0.0
+github:              "almayor/correct-me-v2"
+license:             BSD-3-Clause
+author:              "Alexander Mayorov"
+maintainer:          "mayorovme@gmail.com"
+copyright:           "2024 Alexander Mayorov"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/almayor/correct-me-v2#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+  default-extensions: DerivingStrategies
+                    , GeneralizedNewtypeDeriving
+                    , OverloadedStrings
+                    , NamedFieldPuns
+                    , TemplateHaskell
+                    , DeriveAnyClass
+                    , MultiParamTypeClasses
+                    , InstanceSigs
+                    , DataKinds
+                    , TypeOperators
+                    , DeriveGeneric
+                    , ConstraintKinds
+                    , FlexibleContexts
+                    , TypeApplications
+
+executables:
+  correct-me-v2-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - correct-me-v2
+
+tests:
+  correct-me-v2-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - correct-me-v2
+
+dependencies:
+  - base
+  - casing
+  - servant
+  - aeson
+  - transformers
+  - servant-server
+  - warp >= 3.2.4
+  - wai-logger
+  - wai
+  - wai-extra
+  - fast-logger
+  - hasql
+  - hasql-th
+  - hasql-transaction
+  - hasql-migration
+  - hasql-pool
+  - text
+  - time
+  - contravariant-extras
+  - vector
+  - profunctors
+  - tuple
+  - bytestring
+  - mtl
+  - monad-logger
+  - tomland
+  - either
+  - bcrypt
