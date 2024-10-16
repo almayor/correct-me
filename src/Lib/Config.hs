@@ -11,17 +11,18 @@ import System.Environment (lookupEnv)
 import Toml (TomlCodec, (.=))
 import qualified Toml
 
+
+data AppConfig = AppConfig
+    { configDescription :: !Text
+    , configDb          :: !DbConfig
+    }
+
 data DbConfig = DbConfig
     { configDbHost :: !ByteString
     , configDbPort :: !Int
     , configDbName :: !ByteString
     , configDbUser :: !ByteString
     , configDbPass :: !ByteString
-    }
-
-data AppConfig = AppConfig
-    { configDescription :: !Text
-    , configDb          :: !DbConfig
     }
 
 dbCodec :: TomlCodec DbConfig
