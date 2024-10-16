@@ -15,8 +15,8 @@ import Lib.Config
 import Lib.Server
 import Lib.Db
 
-initialisePool :: DbConfig -> IO Pool
-initialisePool DbConfig{..} = do
+initialisePool :: AppConfig -> IO Pool
+initialisePool AppConfig{..} = do
     let conSettings = settings configDbHost (fromIntegral configDbPort) configDbUser configDbPass configDbName
         poolSize = 10
         poolAcquisitionTimeout = 10
@@ -25,8 +25,8 @@ initialisePool DbConfig{..} = do
     Pool.acquire poolSize poolAcquisitionTimeout poolLifeTime poolTimeout conSettings
 
 mkEnv :: AppConfig -> IO Env
-mkEnv AppConfig{configDb} = do
-    dbPool <- initialisePool configDb
+mkEnv config = do
+    dbPool <- initialisePool config
     let logAction = defaultOutput stdout
     return Env
         { envDbPool = dbPool
@@ -38,7 +38,7 @@ runServer :: IO ()
 runServer = do
     config <- loadConfig
     env <- mkEnv config
-    run 8080 $ application env
+    run (configAppPort config) $ application env
 
 initDb :: IO ()
 initDb = do

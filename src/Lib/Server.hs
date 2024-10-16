@@ -17,7 +17,7 @@ server :: ServerT API App
 server = registerH :<|> accessH
 
 accessH :: UserID -> App NoContent
-accessH = undefined
+accessH uid = return NoContent
 
 registerH :: UserReq -> App EntryID
 registerH (UserReq username password) = do

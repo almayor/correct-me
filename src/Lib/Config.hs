@@ -1,6 +1,5 @@
 module Lib.Config
     ( AppConfig(..)
-    , DbConfig(..)
     , loadConfig
     ) where
 
@@ -13,30 +12,24 @@ import qualified Toml
 
 
 data AppConfig = AppConfig
-    { configDescription :: !Text
-    , configDb          :: !DbConfig
+    { configAppDescription  :: !Text
+    , configAppPort         :: !Int
+    , configDbHost          :: !ByteString
+    , configDbPort          :: !Int
+    , configDbName          :: !ByteString
+    , configDbUser          :: !ByteString
+    , configDbPass          :: !ByteString
     }
-
-data DbConfig = DbConfig
-    { configDbHost :: !ByteString
-    , configDbPort :: !Int
-    , configDbName :: !ByteString
-    , configDbUser :: !ByteString
-    , configDbPass :: !ByteString
-    }
-
-dbCodec :: TomlCodec DbConfig
-dbCodec = DbConfig
-    <$> Toml.byteString "host" .= configDbHost
-    <*> Toml.int "port"        .= configDbPort
-    <*> Toml.byteString "name" .= configDbHost
-    <*> Toml.byteString "user" .= configDbUser
-    <*> Toml.byteString "pass" .= configDbPass
 
 configCodec :: TomlCodec AppConfig
 configCodec = AppConfig
-    <$> Toml.text "app.description" .= configDescription
-    <*> Toml.table dbCodec "db" .= configDb
+    <$> Toml.text "app.description" .= configAppDescription
+    <*> Toml.int "app.port"         .= configAppPort
+    <*> Toml.byteString "db.host"   .= configDbHost
+    <*> Toml.int "db.port"          .= configDbPort
+    <*> Toml.byteString "db.name"   .= configDbHost
+    <*> Toml.byteString "db.user"   .= configDbUser
+    <*> Toml.byteString "db.pass"   .= configDbPass
 
 loadConfig :: IO AppConfig
 loadConfig = do
