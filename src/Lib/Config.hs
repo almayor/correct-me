@@ -1,33 +1,41 @@
 module Lib.Config
     ( AppConfig(..)
+    , DbConfig(..)
     , loadConfig
     ) where
 
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import Data.Word (Word16)
 import System.Environment (lookupEnv)
 import Toml (TomlCodec, (.=))
 import qualified Toml
 
+data DbConfig = DbConfig
+    { configDbHost :: !ByteString
+    , configDbPort :: !Int
+    , configDbName :: !ByteString
+    , configDbUser :: !ByteString
+    , configDbPass :: !ByteString
+    }
+
 data AppConfig = AppConfig
     { configDescription :: !Text
-    , configDbPort      :: !Word16
-    , configDbHost      :: !ByteString
-    , configDbName      :: !ByteString
-    , configDbUser      :: !ByteString
-    , configDbPass      :: !ByteString
+    , configDb          :: !DbConfig
     }
+
+dbCodec :: TomlCodec DbConfig
+dbCodec = DbConfig
+    <$> Toml.byteString "host" .= configDbHost
+    <*> Toml.int "port"        .= configDbPort
+    <*> Toml.byteString "name" .= configDbHost
+    <*> Toml.byteString "user" .= configDbUser
+    <*> Toml.byteString "pass" .= configDbPass
 
 configCodec :: TomlCodec AppConfig
 configCodec = AppConfig
     <$> Toml.text "app.description" .= configDescription
-    <*> Toml.read "db.port" .= configDbPort
-    <*> Toml.byteString "db.host" .= configDbHost
-    <*> Toml.byteString "db.name" .= configDbName
-    <*> Toml.byteString "db.user" .= configDbUser
-    <*> Toml.byteString "db.pass" .= configDbPass
+    <*> Toml.table dbCodec "db" .= configDb
 
 loadConfig :: IO AppConfig
 loadConfig = do

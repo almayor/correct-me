@@ -1,0 +1,8 @@
+app.description = "correct-me"
+
+[db]
+host = "localhost"
+port = 5432
+name = "mydb"
+user = "myuser"
+pass = "mypassword"

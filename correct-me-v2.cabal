@@ -46,11 +46,11 @@ library
   hs-source-dirs:
       src
   default-extensions:
-      DerivingStrategies , GeneralizedNewtypeDeriving , OverloadedStrings , NamedFieldPuns , TemplateHaskell , DeriveAnyClass , MultiParamTypeClasses , InstanceSigs , DataKinds , TypeOperators , DeriveGeneric , ConstraintKinds , FlexibleContexts , TypeApplications , RecordWildCards
+      DerivingStrategies , GeneralizedNewtypeDeriving , OverloadedStrings , NamedFieldPuns , TemplateHaskell , DeriveAnyClass , MultiParamTypeClasses , InstanceSigs , DataKinds , TypeOperators , DeriveGeneric , ConstraintKinds , FlexibleContexts , TypeApplications , RecordWildCards , ScopedTypeVariables
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
-    , base
+    , base >=4.7 && <5
     , bcrypt
     , bytestring
     , casing
@@ -72,6 +72,7 @@ library
     , tomland
     , transformers
     , tuple
+    , utf8-string
     , vector
     , wai
     , wai-extra
@@ -90,7 +91,7 @@ executable correct-me-v2-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.7 && <5
     , bcrypt
     , bytestring
     , casing
@@ -113,6 +114,7 @@ executable correct-me-v2-exe
     , tomland
     , transformers
     , tuple
+    , utf8-string
     , vector
     , wai
     , wai-extra
@@ -132,7 +134,7 @@ test-suite correct-me-v2-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , base >=4.7 && <5
     , bcrypt
     , bytestring
     , casing
@@ -155,6 +157,7 @@ test-suite correct-me-v2-test
     , tomland
     , transformers
     , tuple
+    , utf8-string
     , vector
     , wai
     , wai-extra

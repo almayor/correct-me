@@ -3,9 +3,6 @@ module Lib.Core.Password where
 import qualified Crypto.BCrypt as BCrypt
 
 import Data.Text (Text)
-import GHC.Generics (Generic)
-import Data.Aeson (ToJSON, FromJSON)
-import Control.Monad.Signatures (Pass)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
 

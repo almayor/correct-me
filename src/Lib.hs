@@ -1,4 +1,7 @@
-module Lib (runServer) where
+module Lib (
+    runServer
+    , initDb
+    ) where
 
 import Control.Monad.Logger
 import Hasql.Connection (settings)
@@ -10,10 +13,11 @@ import Network.Wai.Handler.Warp (run)
 import Lib.App
 import Lib.Config
 import Lib.Server
+import Lib.Db
 
-initialisePool :: AppConfig -> IO Pool
-initialisePool AppConfig{..} = do
-    let conSettings = settings configDbHost configDbPort configDbUser configDbPass configDbName
+initialisePool :: DbConfig -> IO Pool
+initialisePool DbConfig{..} = do
+    let conSettings = settings configDbHost (fromIntegral configDbPort) configDbUser configDbPass configDbName
         poolSize = 10
         poolAcquisitionTimeout = 10
         poolTimeout = 60 -- one minute
@@ -21,8 +25,8 @@ initialisePool AppConfig{..} = do
     Pool.acquire poolSize poolAcquisitionTimeout poolLifeTime poolTimeout conSettings
 
 mkEnv :: AppConfig -> IO Env
-mkEnv config = do
-    dbPool <- initialisePool config
+mkEnv AppConfig{configDb} = do
+    dbPool <- initialisePool configDb
     let logAction = defaultOutput stdout
     return Env
         { envDbPool = dbPool
@@ -35,6 +39,12 @@ runServer = do
     config <- loadConfig
     env <- mkEnv config
     run 8080 $ application env
+
+initDb :: IO ()
+initDb = do
+    config <- loadConfig
+    env <- mkEnv config
+    runAppAsIO env prepareSeededDb
     
  
 

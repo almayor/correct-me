@@ -20,7 +20,35 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/almayor/correct-me-v2#readme>
 
 dependencies:
-- base >= 4.7 && < 5
+  - base >= 4.7 && < 5
+  - casing
+  - servant
+  - aeson
+  - transformers
+  - servant-server
+  - warp >= 3.2.4
+  - wai-logger
+  - wai
+  - wai-extra
+  - fast-logger
+  - hasql
+  - hasql-th
+  - hasql-transaction
+  - hasql-migration
+  - hasql-pool
+  - text
+  - time
+  - contravariant-extras
+  - vector
+  - profunctors
+  - tuple
+  - bytestring
+  - mtl
+  - monad-logger
+  - tomland
+  - either
+  - bcrypt
+  - utf8-string
 
 ghc-options:
 - -Wall
@@ -50,6 +78,7 @@ library:
                     , FlexibleContexts
                     , TypeApplications
                     , RecordWildCards
+                    , ScopedTypeVariables
 
 executables:
   correct-me-v2-exe:
@@ -72,33 +101,3 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - correct-me-v2
-
-dependencies:
-  - base
-  - casing
-  - servant
-  - aeson
-  - transformers
-  - servant-server
-  - warp >= 3.2.4
-  - wai-logger
-  - wai
-  - wai-extra
-  - fast-logger
-  - hasql
-  - hasql-th
-  - hasql-transaction
-  - hasql-migration
-  - hasql-pool
-  - text
-  - time
-  - contravariant-extras
-  - vector
-  - profunctors
-  - tuple
-  - bytestring
-  - mtl
-  - monad-logger
-  - tomland
-  - either
-  - bcrypt

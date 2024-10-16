@@ -3,4 +3,6 @@ module Main (main) where
 import Lib
 
 main :: IO ()
-main = print "Hello world!"
+main = do
+    print "Hello world!"
+    initDb
