@@ -1,20 +1,15 @@
-module Lib where
+module Lib (runServer) where
 
 import Control.Monad.Logger
-import Data.ByteString (ByteString)
-import Data.Maybe (fromMaybe)
-import Data.Text (Text)
-import Data.Word (Word16)
 import Hasql.Connection (settings)
 import Hasql.Pool (Pool)
 import qualified Hasql.Pool as Pool
-import System.Environment (lookupEnv)
 import System.IO (stdout)
-import Toml (TomlCodec, (.=))
-import qualified Toml
+import Network.Wai.Handler.Warp (run)
 
-import Monad
-import Config
+import Lib.App
+import Lib.Config
+import Lib.Server
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
@@ -34,5 +29,12 @@ mkEnv config = do
         , envLogAction = logAction
         , envLogLevel = LevelDebug
         }
+
+runServer :: IO ()
+runServer = do
+    config <- loadConfig
+    env <- mkEnv config
+    run 8080 $ application env
+    
  
 

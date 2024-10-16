@@ -25,12 +25,20 @@ source-repository head
 
 library
   exposed-modules:
-      Database
-      Error
       Lib
-      Password
-      Server
-      Types
+      Lib.Api
+      Lib.App
+      Lib.App.Error
+      Lib.App.Monad
+      Lib.Config
+      Lib.Core.Password
+      Lib.Db
+      Lib.Db.Functions
+      Lib.Db.Schema
+      Lib.Db.Statements
+      Lib.Db.Types
+      Lib.Server
+      Lib.Server.Auth
   other-modules:
       Paths_correct_me_v2
   autogen-modules:
@@ -38,7 +46,7 @@ library
   hs-source-dirs:
       src
   default-extensions:
-      DerivingStrategies , GeneralizedNewtypeDeriving , OverloadedStrings , NamedFieldPuns , TemplateHaskell , DeriveAnyClass , MultiParamTypeClasses , InstanceSigs , DataKinds , TypeOperators , DeriveGeneric , ConstraintKinds , FlexibleContexts , TypeApplications
+      DerivingStrategies , GeneralizedNewtypeDeriving , OverloadedStrings , NamedFieldPuns , TemplateHaskell , DeriveAnyClass , MultiParamTypeClasses , InstanceSigs , DataKinds , TypeOperators , DeriveGeneric , ConstraintKinds , FlexibleContexts , TypeApplications , RecordWildCards
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
