@@ -12,12 +12,10 @@ import Lib.Core.Password
 import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
+import Data.Vector (Vector)
 
 server :: ServerT API App
-server = registerH :<|> accessH
-
-accessH :: UserID -> App NoContent
-accessH uid = return NoContent
+server = registerH :<|> listPhrasesH
 
 registerH :: UserReq -> App EntryID
 registerH (UserReq username password) = do
@@ -25,6 +23,10 @@ registerH (UserReq username password) = do
     when exists userAlreadyExistsError
     pwdHash <- mkPasswordHash password
     execute userInsertSt (username, pwdHash)
+
+listPhrasesH :: UserID -> Maybe UserID -> Bool -> App (Vector Phrase)
+listPhrasesH _ authorId isOpen = do
+    execute phraseGetAllSt (isOpen, authorId)
 
 application :: Env -> Application
 application env = 

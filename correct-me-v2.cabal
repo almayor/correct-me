@@ -36,7 +36,6 @@ library
       Lib.Db.Functions
       Lib.Db.Schema
       Lib.Db.Statements
-      Lib.Db.Types
       Lib.Server
       Lib.Server.Auth
   other-modules:
