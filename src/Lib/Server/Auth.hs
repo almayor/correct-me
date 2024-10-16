@@ -9,17 +9,17 @@ import Lib.App.Monad
 import Lib.Core.Password
 import Lib.Api
 
-authenticate' :: BasicAuthData -> App (BasicAuthResult UserID)
+authenticate' :: BasicAuthData -> App (BasicAuthResult User)
 authenticate' (BasicAuthData username password) = do
-    user <- execute userGetByUsernameSt (T.decodeLatin1 username)
-    case user of
+    result <- execute userGetByUsernameSt (T.decodeLatin1 username)
+    case result of
         Nothing -> return NoSuchUser
-        Just (User { userId, userPwdHash }) ->
+        Just user@User { userPwdHash } ->
             if verifyPassword (T.decodeASCII password) userPwdHash
-                then return $ Authorized userId
+                then return $ Authorized user
                 else return BadPassword
 
-authenticate :: Env -> BasicAuthData -> IO (BasicAuthResult UserID)
+authenticate :: Env -> BasicAuthData -> IO (BasicAuthResult User)
 authenticate env d = runAppAsIO env (authenticate' d)
 
 

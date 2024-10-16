@@ -73,10 +73,10 @@ type RegisterAPI = "register" :> ReqBody '[JSON] UserReq :> Post '[JSON] UserID
 --     :<|> ReqBody '[JSON] PhraseReq :> Post '[JSON] NoContent
 --     )
 
-type PhraseAPI = "phrases"
-    :> QueryParam "author_id" UserID
-    :> QueryFlag "open"
-    :> Get '[JSON] (Vector Phrase)
+type PhrasesAPI = "phrases" :> (
+         QueryParam "author_id" UserID :> QueryFlag "open" :> Get '[JSON] (Vector Phrase)
+    :<|> ReqBody '[JSON] PhraseReq :> Post '[JSON] EntryID
+    )
 
-type API = RegisterAPI :<|> BasicAuth "basic-auth" UserID :> PhraseAPI 
+type API = RegisterAPI :<|> BasicAuth "basic-auth" User :> PhrasesAPI 
 

@@ -51,4 +51,11 @@ phraseGetAllSt = rmap (V.map (uncurryN Phrase))
       AND ($2 :: int4? IS NULL OR author_id = $2 :: int4?)
     ORDER BY created_at DESC|]
 
+phrasesInsertSt :: Statement (UserID, Text) EntryID
+phrasesInsertSt = 
+      [singletonStatement|
+        INSERT INTO phrases (author_id, text)
+        VALUES ($1 :: int4, $2 :: text)
+        RETURNING id :: int4|]
+
     
