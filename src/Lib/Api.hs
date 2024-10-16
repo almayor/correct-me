@@ -72,9 +72,9 @@ type UsersAPI = "users" :> (
     -- GET /users/
     Get '[JSON] (Vector LocPath) :<|>
     -- GET /users/3/
-    Capture "userId" UserID :> Get '[JSON] User :<|>
+    Capture "user_id" UserID :> Get '[JSON] User :<|>
     -- GET /users/3/phrases?open
-    Capture "userId" UserID :> "phrases" :> QueryFlag "open" :> Get '[JSON] (Vector LocPath)
+    Capture "user_id" UserID :> "phrases" :> QueryFlag "open" :> Get '[JSON] (Vector LocPath)
     )
 
 type PhraseAPI = "phrases" :> (
@@ -83,17 +83,19 @@ type PhraseAPI = "phrases" :> (
     -- POST /phrases
     ReqBody '[JSON] PhraseReq :> Post '[JSON] LocPath :<|>
     -- GET /phrases/24
-    Capture "phraseId" EntryID :> Get '[JSON] Phrase :<|>
+    Capture "phrase_id" EntryID :> Get '[JSON] Phrase :<|>
     -- GET /phrases/24/alternatives
-    Capture "phraseId" EntryID :> "alternatives" :> Get '[JSON] (Vector LocPath) :<|>
+    Capture "phrase_id" EntryID :> "alternatives" :> Get '[JSON] (Vector LocPath) :<|>
     -- POST /phrases/24/alternatives
-    Capture "phraseId" EntryID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> Post '[JSON] LocPath
+    Capture "phrase_id" EntryID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> Post '[JSON] LocPath
     )
 
 type AlternativeAPI = "alternatives" :> (
+    -- GET /alternatives/301?author_id=3
+    QueryParam "author_id" UserID :> Get '[JSON] (Vector LocPath) :<|>
     -- GET /alternatives/301
     Capture "alternativeId" EntryID :> Get '[JSON] Alternative :<|>
-    -- PUT /alternatives/301
+    -- PUT /alternatives/301/choose
     Capture "alternativeId" EntryID :> "choose" :> Put '[JSON] LocPath
     )
 

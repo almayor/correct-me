@@ -25,10 +25,11 @@ server = publicH :<|> protectedH
             listPhrasesH u
         :<|> insertPhraseH u
         :<|> getPhraseH u
-        :<|> listAlternativesH u
+        :<|> listAlternativesByPhraseH u
         :<|> insertAlternativeH u
     alternativeH u =
-            getAlternativeH u
+            listAlternatives u
+        :<|> getAlternativeH u
         :<|> setAlternativeH u
     publicH = registerH
     protectedH u = userH u :<|> phraseH u :<|> alternativeH u
@@ -66,9 +67,14 @@ listPhrasesH _ isOpen = do
     entries <- execute phraseListSt (isOpen, Nothing)
     return $ phraseId2Loc <$> entries
 
-listAlternativesH :: User -> EntryID -> App (Vector LocPath)
-listAlternativesH _ phraseId = do
-    entries <- execute alternativeListSt phraseId
+listAlternativesByPhraseH :: User -> EntryID -> App (Vector LocPath)
+listAlternativesByPhraseH _ phraseId = do
+    entries <- execute alternativeListByPhraseSt phraseId
+    return $ alternativeId2Loc <$> entries
+
+listAlternatives :: User -> Maybe UserID -> App (Vector LocPath)
+listAlternatives _ authorId = do
+    entries <- execute alternativeListSt authorId
     return $ alternativeId2Loc <$> entries
 
 getUserH :: User -> UserID -> App User

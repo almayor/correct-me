@@ -103,13 +103,22 @@ alternativeGetSt = rmap (uncurryN Alternative <$>)
         FROM alternatives
         WHERE id = $1 :: int4|]
     
-alternativeListSt :: Statement EntryID (Vector EntryID)
-alternativeListSt =
+alternativeListByPhraseSt :: Statement EntryID (Vector EntryID)
+alternativeListByPhraseSt =
   [vectorStatement|
     SELECT
       id :: int4
     FROM alternatives
     WHERE phrase_id = $1 :: int4
+    ORDER BY created_at DESC|]
+
+alternativeListSt :: Statement (Maybe UserID) (Vector EntryID)
+alternativeListSt =
+  [vectorStatement|
+    SELECT
+      id :: int4
+    FROM alternatives
+    WHERE $1 :: int4? IS NULL OR author_id = $1 :: int4?
     ORDER BY created_at DESC|]
 
 alternativeInsertSt :: Statement (UserID, EntryID, Text) EntryID
