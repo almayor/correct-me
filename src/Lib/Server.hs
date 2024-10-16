@@ -29,6 +29,7 @@ server = publicH :<|> protectedH
         :<|> insertAlternativeH u
     alternativeH u =
             getAlternativeH u
+        :<|> setAlternativeH u
     publicH = registerH
     protectedH u = userH u :<|> phraseH u :<|> alternativeH u
 
@@ -84,6 +85,14 @@ getAlternativeH :: User -> EntryID -> App Alternative
 getAlternativeH _ altId = do
     entry <- execute alternativeGetSt altId
     maybe notFoundError return entry
+
+setAlternativeH :: User -> EntryID -> App LocPath
+setAlternativeH (User { userId }) altId = do
+    alt <- execute alternativeGetSt altId >>= maybe notFoundError return
+    phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe inconsistentDataError return
+    when (phraseAuthorId phrase /= userId) notTheAuthorError
+    execute phraseSetChosenAltSt (altPhraseId alt, altId)
+    return $ phraseId2Loc (altPhraseId alt)
 
 application :: Env -> Application
 application env = 

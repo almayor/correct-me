@@ -84,17 +84,25 @@ phraseInsertSt =
         VALUES ($1 :: int4, $2 :: text)
         RETURNING id :: int4|]
 
+phraseSetChosenAltSt :: Statement (EntryID, EntryID) ()
+phraseSetChosenAltSt = 
+      [singletonStatement|
+        UPDATE phrases
+        SET chosen_alt_id = $2 :: int4, is_open = FALSE
+        WHERE id = $1 :: int4|]
+
 alternativeGetSt :: Statement EntryID (Maybe Alternative)
 alternativeGetSt = rmap (uncurryN Alternative <$>)
       [maybeStatement|
         SELECT
           id :: int4,
+          author_id :: int4,
           phrase_id :: int4,
           text :: text,
           created_at :: timestamptz
         FROM alternatives
         WHERE id = $1 :: int4|]
-
+    
 alternativeListSt :: Statement EntryID (Vector EntryID)
 alternativeListSt =
   [vectorStatement|
@@ -110,6 +118,7 @@ alternativeInsertSt =
         INSERT INTO alternatives (author_id, phrase_id, text)
         VALUES ($1 :: int4, $2 :: int4, $3 :: text)
         RETURNING id :: int4|]
+
 
 
     

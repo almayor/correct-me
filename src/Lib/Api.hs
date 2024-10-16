@@ -26,7 +26,8 @@ $(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 4} ''User)
 
 data Alternative = Alternative
     { altId          :: EntryID
-    , altUser        :: UserID
+    , altAuthorId    :: UserID
+    , altPhraseId    :: EntryID
     , altText        :: Text
     , altCreatedAt   :: UTCTime
     } deriving (Show)
@@ -35,7 +36,7 @@ $(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 3} ''Alternat
 
 data Phrase = Phrase
     { phraseId            :: EntryID
-    , phraseAuthor        :: UserID
+    , phraseAuthorId      :: UserID
     , phraseText          :: Text
     , phraseCreatedAt     :: UTCTime
     , phraseIsOpen        :: Bool
@@ -91,7 +92,9 @@ type PhraseAPI = "phrases" :> (
 
 type AlternativeAPI = "alternatives" :> (
     -- GET /alternatives/301
-    Capture "alternativeId" EntryID :> Get '[JSON] Alternative
+    Capture "alternativeId" EntryID :> Get '[JSON] Alternative :<|>
+    -- PUT /alternatives/301
+    Capture "alternativeId" EntryID :> "choose" :> Put '[JSON] LocPath
     )
 
 type PublicAPI = RegisterAPI
