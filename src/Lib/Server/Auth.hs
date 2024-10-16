@@ -14,8 +14,9 @@ authenticate' (BasicAuthData username password) = do
     result <- execute userGetByUsernameSt (T.decodeLatin1 username)
     case result of
         Nothing -> return NoSuchUser
-        Just user@User { userPwdHash } ->
-            if verifyPassword (T.decodeASCII password) userPwdHash
+        Just user -> do
+            pwdHash <- execute userGetPasswordSt (userId user)
+            if verifyPassword (T.decodeASCII password) pwdHash
                 then return $ Authorized user
                 else return BadPassword
 

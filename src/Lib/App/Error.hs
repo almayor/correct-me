@@ -1,12 +1,15 @@
 module Lib.App.Error where
 
 import Control.Monad.Except (MonadError, throwError)
-import Servant (ServerError, err409, errBody, err500)
+import Servant (ServerError, err409, err500, err404, errBody)
 import Hasql.Pool (UsageError)
 import Data.String (fromString)
 import Control.Monad.Logger (MonadLogger, logError)
 
 type CanFail m = (MonadError ServerError m, MonadLogger m)
+
+notFoundError :: CanFail m => m a
+notFoundError = throwError err404
 
 userAlreadyExistsError :: CanFail m => m a
 userAlreadyExistsError = throwError $ err409 { errBody = "User already exists" }

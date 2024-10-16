@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
+
 module Lib.Api where
 
 import Servant
@@ -7,11 +10,40 @@ import Data.Aeson.TH (deriveJSON, Options (fieldLabelModifier), defaultOptions)
 import Text.Casing (quietSnake)
 import Data.Int (Int32)
 import Data.Time (UTCTime)
-import Lib.Core.Password (PasswordHash)
 import Data.Vector (Vector)
 
 type EntryID = Int32
 type UserID = EntryID
+type LocPath = String
+
+data User = User
+    { userId        :: EntryID
+    , userUsername  :: Text
+    , userCreatedAt :: UTCTime
+    } deriving (Show, Generic)
+
+$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 4} ''User)
+
+data Alternative = Alternative
+    { altId          :: EntryID
+    , altUser        :: UserID
+    , altText        :: Text
+    , altCreatedAt   :: UTCTime
+    } deriving (Show)
+
+$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 3} ''Alternative)
+
+data Phrase = Phrase
+    { phraseId            :: EntryID
+    , phraseAuthor        :: UserID
+    , phraseText          :: Text
+    , phraseCreatedAt     :: UTCTime
+    , phraseIsOpen        :: Bool
+    , phraseChosenAltId   :: Maybe EntryID
+    , phraseNumAlts       :: EntryID
+    } deriving (Show, Generic)
+
+$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 6} ''Phrase)
 
 data UserReq = UserReq
     { userReqUsername :: Text
@@ -26,57 +58,51 @@ data PhraseReq = PhraseReq
 
 $(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 9} ''PhraseReq)
 
-data User = User
-    { userId        :: EntryID
-    , userUsername  :: Text
-    , userPwdHash   :: PasswordHash
-    , userCreatedAt :: UTCTime
+data AlternativeReq = AlternativeReq
+    { altReqText :: Text
     } deriving (Show, Generic)
 
-$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 4} ''User)
+$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 6} ''AlternativeReq)
 
-data Phrase = Phrase
-    { phraseId          :: EntryID
-    , phraseUserId      :: EntryID
-    , phraseText        :: Text
-    , phraseChosenAltId :: Maybe EntryID
-    , phraseIsOpen      :: Bool
-    , phraseCreatedAt   :: UTCTime
-    } deriving (Show, Generic)
+-- POST /users/
+type RegisterAPI = "users" :> ReqBody '[JSON] UserReq :> Post '[JSON] LocPath
 
-$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 6} ''Phrase)
-
-data Alternative = Alternative
-    { altId          :: EntryID
-    , altUserId      :: EntryID
-    , altPhraseId    :: EntryID
-    , altText        :: Text
-    , altCreatedAt   :: UTCTime
-    } deriving (Show)
-
-$(deriveJSON defaultOptions{fieldLabelModifier = quietSnake . drop 4} ''Alternative)
-
-type RegisterAPI = "register" :> ReqBody '[JSON] UserReq :> Post '[JSON] UserID
-
--- type PhraseAPI = "phrases" :> (
---          QueryParam "author_id" Int :> QueryFlag "open" :> Get '[JSON] [Phrase]
---     :<|> ReqBody '[JSON] PhraseReq :> Post '[JSON] NoContent
---     :<|> Capture "id" Int :> "alternatives" :> (
---              Get '[JSON] [Alternative]
---         :<|> ReqBody '[JSON] AlternativeReq :> Post '[JSON] NoContent
---         :<|> Capture "id" Int :> "approve" :> Put '[JSON] NoContent
---         )
---     )
-
--- type PhraseAPI = "phrases" :>
---     (    QueryParam "author_id" Int :> QueryFlag "open" :> Get '[JSON] [PhraseResp]
---     :<|> ReqBody '[JSON] PhraseReq :> Post '[JSON] NoContent
---     )
-
-type PhrasesAPI = "phrases" :> (
-         QueryParam "author_id" UserID :> QueryFlag "open" :> Get '[JSON] (Vector Phrase)
-    :<|> ReqBody '[JSON] PhraseReq :> Post '[JSON] EntryID
+type UsersAPI = "users" :> (
+    -- GET /users/
+    Get '[JSON] (Vector LocPath) :<|>
+    -- GET /users/3/
+    Capture "userId" UserID :> Get '[JSON] User :<|>
+    -- GET /users/3/phrases?open
+    Capture "userId" UserID :> "phrases" :> QueryFlag "open" :> Get '[JSON] (Vector LocPath)
     )
 
-type API = RegisterAPI :<|> BasicAuth "basic-auth" User :> PhrasesAPI 
+type PhraseAPI = "phrases" :> (
+    -- GET /phrases?open
+    QueryFlag "open" :> Get '[JSON] (Vector LocPath) :<|>
+    -- POST /phrases
+    ReqBody '[JSON] PhraseReq :> Post '[JSON] LocPath :<|>
+    -- GET /phrases/24
+    Capture "phraseId" EntryID :> Get '[JSON] Phrase :<|>
+    -- GET /phrases/24/alternatives
+    Capture "phraseId" EntryID :> "alternatives" :> Get '[JSON] (Vector LocPath) :<|>
+    -- POST /phrases/24/alternatives
+    Capture "phraseId" EntryID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> Post '[JSON] LocPath
+    )
 
+type AlternativeAPI = "alternatives" :> (
+    -- GET /alternatives/301
+    Capture "alternativeId" EntryID :> Get '[JSON] Alternative
+    )
+
+type PublicAPI = RegisterAPI
+type ProtectedAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
+type API = "api" :> (PublicAPI :<|> BasicAuth "basic-auth" User :> ProtectedAPI) 
+
+userId2Loc :: UserID -> LocPath
+userId2Loc = ("/api/users/" ++) . show
+
+phraseId2Loc :: EntryID -> LocPath
+phraseId2Loc = ("/api/phrases/" ++) . show
+
+alternativeId2Loc :: EntryID -> LocPath
+alternativeId2Loc = ("/api/alternatives/" ++) . show
