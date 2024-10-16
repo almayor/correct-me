@@ -42,7 +42,7 @@ application env =
     let ctx = BasicAuthCheck (authenticate env) :. EmptyContext
         hoistedServer = hoistServerWithContext
             (Proxy @API)
-            (Proxy @'[BasicAuthCheck UserID])
+            (Proxy @'[BasicAuthCheck User])
             (runAppAsHandler env)
             server
     in serveWithContext (Proxy @API) ctx hoistedServer
