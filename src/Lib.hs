@@ -1,5 +1,5 @@
-module Lib (
-    runServer
+module Lib
+    ( runServer
     , initDb
     ) where
 
@@ -9,11 +9,14 @@ import Hasql.Pool (Pool)
 import qualified Hasql.Pool as Pool
 import System.IO (stdout)
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.RequestLogger
+
 
 import Lib.App
 import Lib.Config
 import Lib.Server
 import Lib.Db
+import Network.Wai (Middleware)
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
@@ -34,11 +37,20 @@ mkEnv config = do
         , envLogLevel = LevelDebug
         }
 
+mkLoggers :: AppConfig -> IO Middleware
+mkLoggers _ = 
+    let stdoutLoggerSettings = defaultRequestLoggerSettings {
+          outputFormat = Apache FromHeader,      -- Use Apache log format
+          destination = Handle stdout            -- Log to stdout 
+        }
+    in mkRequestLogger stdoutLoggerSettings
+
 runServer :: IO ()
 runServer = do
     config <- loadConfig
     env <- mkEnv config
-    run (configAppPort config) $ application env
+    loggers <- mkLoggers config
+    run (configAppPort config) $ loggers $ application env
 
 initDb :: IO ()
 initDb = do

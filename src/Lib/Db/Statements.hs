@@ -13,8 +13,8 @@ import qualified Hasql.Encoders as E
 
 import Lib.Core.Types
 
-userExistsSt :: Statement UserName Bool
-userExistsSt = Statement sql encoder decoder True
+userExistsByNameSt :: Statement UserName Bool
+userExistsByNameSt = Statement sql encoder decoder True
   where
     sql = 
       "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 :: text) :: bool"

@@ -15,7 +15,6 @@ import Lib.Core.Password
 import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
-import Data.String (fromString)
 
 server :: ServerT API App
 server = publicH :<|> protectedH
@@ -39,7 +38,7 @@ server = publicH :<|> protectedH
 
 registerH :: UserReq -> App LocPath
 registerH (UserReq userName password) = do
-    exists <- execute userExistsSt userName
+    exists <- execute userExistsByNameSt userName
     when exists userAlreadyExistsError
     pwdHash <- mkPasswordHash password
     userId <- execute userInsertSt (userName, pwdHash)
