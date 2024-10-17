@@ -32,6 +32,8 @@ library
       Lib.App.Monad
       Lib.Config
       Lib.Core.Password
+      Lib.Core.Types
+      Lib.Core.Username
       Lib.Db
       Lib.Db.Functions
       Lib.Db.Schema
@@ -52,8 +54,8 @@ library
     , base >=4.7 && <5
     , bcrypt
     , bytestring
-    , casing
     , contravariant-extras
+    , deriving-aeson
     , either
     , fast-logger
     , hasql
@@ -93,9 +95,9 @@ executable correct-me-v2-exe
     , base >=4.7 && <5
     , bcrypt
     , bytestring
-    , casing
     , contravariant-extras
     , correct-me-v2
+    , deriving-aeson
     , either
     , fast-logger
     , hasql
@@ -136,9 +138,9 @@ test-suite correct-me-v2-test
     , base >=4.7 && <5
     , bcrypt
     , bytestring
-    , casing
     , contravariant-extras
     , correct-me-v2
+    , deriving-aeson
     , either
     , fast-logger
     , hasql

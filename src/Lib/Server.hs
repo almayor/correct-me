@@ -5,14 +5,17 @@ module Lib.Server
 
 import Data.Vector (Vector)
 import Control.Monad (when)
+import Control.Monad.Logger
 import Servant
 
 import Lib.App.Monad
 import Lib.App.Error
+import Lib.Core.Types
 import Lib.Core.Password
 import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
+import Data.String (fromString)
 
 server :: ServerT API App
 server = publicH :<|> protectedH
@@ -35,11 +38,11 @@ server = publicH :<|> protectedH
     protectedH u = userH u :<|> phraseH u :<|> alternativeH u
 
 registerH :: UserReq -> App LocPath
-registerH (UserReq username password) = do
-    exists <- execute userExistsSt username
+registerH (UserReq userName password) = do
+    exists <- execute userExistsSt userName
     when exists userAlreadyExistsError
     pwdHash <- mkPasswordHash password
-    userId <- execute userInsertSt (username, pwdHash)
+    userId <- execute userInsertSt (userName, pwdHash)
     return $ userId2Loc userId
 
 insertPhraseH :: User -> PhraseReq -> App LocPath
@@ -47,7 +50,7 @@ insertPhraseH (User { userId }) (PhraseReq { phraseReqText }) = do
     phraseId <- execute phraseInsertSt (userId, phraseReqText)
     return $ phraseId2Loc phraseId
 
-insertAlternativeH :: User -> EntryID -> AlternativeReq -> App LocPath
+insertAlternativeH :: User -> PhraseID -> AlternativeReq -> App LocPath
 insertAlternativeH (User { userId }) phraseId (AlternativeReq { altReqText }) = do
     altId <- execute alternativeInsertSt (userId, phraseId, altReqText)
     return $ alternativeId2Loc altId
@@ -67,7 +70,7 @@ listPhrasesH _ isOpen = do
     entries <- execute phraseListSt (isOpen, Nothing)
     return $ phraseId2Loc <$> entries
 
-listAlternativesByPhraseH :: User -> EntryID -> App (Vector LocPath)
+listAlternativesByPhraseH :: User -> PhraseID -> App (Vector LocPath)
 listAlternativesByPhraseH _ phraseId = do
     entries <- execute alternativeListByPhraseSt phraseId
     return $ alternativeId2Loc <$> entries
@@ -82,17 +85,17 @@ getUserH _ userId = do
     entry <- execute userGetSt userId
     maybe notFoundError return entry
 
-getPhraseH :: User -> EntryID -> App Phrase
+getPhraseH :: User -> PhraseID -> App Phrase
 getPhraseH _ phraseId = do
     entry <- execute phraseGetSt phraseId
     maybe notFoundError return entry
 
-getAlternativeH :: User -> EntryID -> App Alternative
+getAlternativeH :: User -> AlternativeID -> App Alternative
 getAlternativeH _ altId = do
     entry <- execute alternativeGetSt altId
     maybe notFoundError return entry
 
-setAlternativeH :: User -> EntryID -> App LocPath
+setAlternativeH :: User -> AlternativeID -> App LocPath
 setAlternativeH (User { userId }) altId = do
     alt <- execute alternativeGetSt altId >>= maybe notFoundError return
     phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe inconsistentDataError return

@@ -21,11 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/alma
 
 dependencies:
   - base >= 4.7 && < 5
-  - casing
   - servant
-  - aeson
-  - transformers
   - servant-server
+  - aeson
+  - deriving-aeson
+  - transformers
   - warp >= 3.2.4
   - wai-logger
   - wai
