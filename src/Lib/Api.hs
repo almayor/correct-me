@@ -10,7 +10,7 @@ import Data.Vector (Vector)
 import Lib.Core.Types
 
 -- POST /users/
-type RegisterAPI = "users" :> ReqBody '[JSON] UserReq :> Post '[JSON] LocPath
+type RegisterAPI = "users" :> ReqBody '[JSON] UserReq :> PostCreated '[JSON] LocPath
 
 type UsersAPI = "users" :> (
     -- GET /users/
@@ -25,13 +25,13 @@ type PhraseAPI = "phrases" :> (
     -- GET /phrases?open
     QueryFlag "open" :> Get '[JSON] (Vector LocPath) :<|>
     -- POST /phrases
-    ReqBody '[JSON] PhraseReq :> Post '[JSON] LocPath :<|>
+    ReqBody '[JSON] PhraseReq :> PostCreated '[JSON] LocPath :<|>
     -- GET /phrases/24
     Capture "phrase_id" PhraseID :> Get '[JSON] Phrase :<|>
     -- GET /phrases/24/alternatives
     Capture "phrase_id" PhraseID :> "alternatives" :> Get '[JSON] (Vector LocPath) :<|>
     -- POST /phrases/24/alternatives
-    Capture "phrase_id" PhraseID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> Post '[JSON] LocPath
+    Capture "phrase_id" PhraseID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> PostCreated '[JSON] LocPath
     )
 
 type AlternativeAPI = "alternatives" :> (
@@ -40,7 +40,7 @@ type AlternativeAPI = "alternatives" :> (
     -- GET /alternatives/301
     Capture "alternativeId" AlternativeID :> Get '[JSON] Alternative :<|>
     -- PUT /alternatives/301/choose
-    Capture "alternativeId" AlternativeID :> "choose" :> Put '[JSON] LocPath
+    Capture "alternativeId" AlternativeID :> "choose" :> Patch '[JSON] LocPath
     )
 
 type PublicAPI = RegisterAPI
