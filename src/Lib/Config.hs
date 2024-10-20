@@ -5,10 +5,11 @@ module Lib.Config
 
 import Data.ByteString (ByteString)
 import Data.Maybe (fromMaybe)
-import Data.Text (Text)
 import System.Environment (lookupEnv)
 import Toml (TomlCodec, (.=))
 import qualified Toml
+import Network.URI (URI, parseURI)
+import Data.Text (Text, pack, unpack)
 
 
 data AppConfig = AppConfig
@@ -19,7 +20,16 @@ data AppConfig = AppConfig
     , configDbName          :: !ByteString
     , configDbUser          :: !ByteString
     , configDbPass          :: !ByteString
+    , configSpellerEnabled  :: !Bool
+    , configSpellerUrl      :: !URI
     }
+
+-- Define the TomlBiMap for URI
+uriCodec :: Toml.Key -> Toml.TomlCodec URI
+uriCodec = Toml.textBy bwd fwd
+    where
+        bwd = pack . show
+        fwd = maybe (Left "Invalid URI") Right . parseURI . unpack
 
 configCodec :: TomlCodec AppConfig
 configCodec = AppConfig
@@ -30,6 +40,8 @@ configCodec = AppConfig
     <*> Toml.byteString "db.name"   .= configDbHost
     <*> Toml.byteString "db.user"   .= configDbUser
     <*> Toml.byteString "db.pass"   .= configDbPass
+    <*> Toml.bool "speller.enabled" .= configSpellerEnabled
+    <*> uriCodec "speller.url"      .= configSpellerUrl
 
 loadConfig :: IO AppConfig
 loadConfig = do

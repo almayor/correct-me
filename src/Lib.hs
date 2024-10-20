@@ -10,13 +10,13 @@ import qualified Hasql.Pool as Pool
 import System.IO (stdout)
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.RequestLogger
-
+import Network.Wai (Middleware)
 
 import Lib.App
 import Lib.Config
 import Lib.Server
 import Lib.Db
-import Network.Wai (Middleware)
+import Lib.Core.Speller
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do

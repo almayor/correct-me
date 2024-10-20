@@ -7,6 +7,7 @@ module Lib.Core.Types where
 import Data.Text (Text)
 import Data.Int (Int32)
 import Data.Time (UTCTime)
+import Data.Aeson (Value)
 import Deriving.Aeson
 import Servant (FromHttpApiData)
 
@@ -28,6 +29,9 @@ newtype PhraseID = PhraseID { unPhraseId :: Int32 }
 newtype AlternativeID = AlternativeID { unAlternativeId :: Int32 }
     deriving newtype (Eq, Show, FromJSON, ToJSON, FromHttpApiData)
 
+newtype SpellCheck = SpellCheck { unSpellcheck :: Value }
+    deriving newtype (Show, FromJSON, ToJSON)
+
 -- location path, e.g. "/api/users/3"
 newtype LocPath = LocPath String
     deriving newtype (Show, FromJSON, ToJSON)
@@ -47,6 +51,7 @@ data Alternative = Alternative
     , altPhraseId    :: PhraseID
     , altText        :: Text
     , altCreatedAt   :: UTCTime
+    -- , altSpellCheck  :: SpellCheck
     }
     deriving (Show, Generic)
     deriving (FromJSON, ToJSON)
@@ -60,6 +65,7 @@ data Phrase = Phrase
     , phraseIsOpen        :: Bool
     , phraseChosenAltId   :: Maybe AlternativeID
     , phraseNumAlts       :: Int32
+    -- , phraseSpellCheck    :: SpellCheck
     }
     deriving (Show, Generic)
     deriving (FromJSON, ToJSON)

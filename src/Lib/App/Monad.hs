@@ -17,12 +17,16 @@ import Control.Exception (throwIO)
 import Hasql.Pool (Pool)
 import Servant (ServerError, Handler)
 
+import Lib.Core.Types
+import Data.Text (Text)
+
 type LogAction = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+type SpellerAction = Text -> IO SpellCheck
 
 data Env = Env
-    { envDbPool    :: !Pool
-    , envLogAction :: LogAction
-    , envLogLevel  :: LogLevel
+    { envDbPool         :: !Pool
+    , envLogAction      :: LogAction
+    , envLogLevel       :: LogLevel
     }
 
 newtype App a = App
@@ -50,6 +54,14 @@ instance WithDb App where
     withPool f = do
         pool <- asks envDbPool
         liftIO $ f pool
+
+-- class HasSpeller m where
+--     runSpeller :: Text -> m SpellCheck
+
+-- instance HasSpeller App where
+--     runSpeller t = do
+--         action <- asks envSpellerAction
+--         liftIO $ action t
 
 runApp :: Env -> App a -> IO (Either ServerError a)
 runApp env app = runExceptT $ runReaderT (unApp app) env

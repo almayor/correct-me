@@ -9,8 +9,8 @@ import Lib.Core.Types
 import Lib.Core.Username
 
 authenticate' :: BasicAuthData -> App (BasicAuthResult User)
-authenticate' (BasicAuthData usernameBS passwordBS) = do
-    let userName = bs2UserName usernameBS
+authenticate' (BasicAuthData userNameBS passwordBS) = do
+    let userName = bs2UserName userNameBS
     let password = bs2Password passwordBS
     result <- execute userGetByUsernameSt userName
     case result of
