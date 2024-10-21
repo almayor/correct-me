@@ -1,4 +1,7 @@
-module Lib.Core.Speller where
+module Lib.Core.Speller
+    ( externalSpeller
+    , mockSpeller
+    ) where
     
 import Control.Exception    -- For error handling
 import Control.Lens hiding ((.=))         -- For lens manipulation (used by wreq)
@@ -15,7 +18,7 @@ import Lib.App.Error
 import Lib.Core.Types (SpellCheck(..))
 
 -- | Spellcheck the given text using Yandex Speller API.
-yandexSpeller :: (MonadIO m, CanFail m) => URI -> Text -> m SpellCheck
+externalSpeller :: (MonadIO m, CanFail m) => URI -> Text -> m SpellCheck
 yandexSpeller uri text = do
     let postData = "text" := text
     $logInfo $ "Requesting spellcheck from " <> (pack . show) uri  <> " with data: " <> (pack . show) postData

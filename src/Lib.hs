@@ -28,10 +28,13 @@ initialisePool AppConfig{..} = do
     Pool.acquire poolSize poolAcquisitionTimeout poolLifeTime poolTimeout conSettings
 
 mkEnv :: AppConfig -> IO Env
-mkEnv config = do
+mkEnv config@Config(configSpellerUri, configSpellerEnabled) = do
     dbPool <- initialisePool config
     let logAction = defaultOutput stdout
-    let spellerAction = yandexSpeller @App (configSpellerUri config)
+    let spellerAction = 
+          if configSpellerEnabled
+              then externalSpeller @App configSpellerUri
+              else mockSpeller @App
     return Env
         { envDbPool = dbPool
         , envLogAction = logAction
