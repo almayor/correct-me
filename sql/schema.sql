@@ -17,7 +17,7 @@ CREATE TABLE "phrases"
     id SERIAL PRIMARY KEY,
     text TEXT NOT NULL,
     author_id INTEGER NOT NULL REFERENCES users,
-    spellcheck_id INTEGER REFERENCES spellcheck,
+    spellcheck_id INTEGER NOT NULL REFERENCES spellcheck,
     is_open BOOLEAN NOT NULL DEFAULT TRUE,
 	chosen_alt_id INTEGER,
     created_at TIMESTAMP DEFAULT NOW()
@@ -29,7 +29,7 @@ CREATE TABLE "alternatives"
     phrase_id INTEGER NOT NULL REFERENCES phrases,
     text TEXT NOT NULL,
     author_id INTEGER NOT NULL REFERENCES users,
-    spellcheck_id INTEGER REFERENCES spellcheck,
+    spellcheck_id INTEGER NOT NULL REFERENCES spellcheck,
     created_at TIMESTAMP DEFAULT NOW()
 );
 

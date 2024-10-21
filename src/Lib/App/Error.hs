@@ -1,40 +1,40 @@
-module Lib.App.Error where
+module Lib.App.Error (
+    CanFail,
+    AppError(..),
+    toHttpError,
+    liftDbError
+) where
 
 import Control.Monad.Except (MonadError, throwError)
 import Servant (ServerError, err409, err500, err404, errBody, err403)
 import Hasql.Pool (UsageError)
 import Data.String (fromString)
-import Control.Monad.Logger (MonadLogger, logError)
+import Control.Monad.Logger (MonadLogger)
+import Control.Exception (Exception)
 
-type CanFail m = (MonadError ServerError m, MonadLogger m)
+type CanFail m = (MonadError AppError m, MonadLogger m)
 
-notFoundError :: CanFail m => m a
-notFoundError = throwError err404
+data AppError =
+      NotFoundError
+    | UserAlreadyExistsError
+    | NotTheAuthorError
+    | PhraseAlreadyClosedError
+    | InconsistentDataError
+    | ExternalServiceError String
+    | DbError UsageError
+    | InternalError String
+    deriving (Show)
+    deriving anyclass (Exception)
 
-userAlreadyExistsError :: CanFail m => m a
-userAlreadyExistsError = throwError $ err409 { errBody = "User already exists" }
-
-notTheAuthorError :: CanFail m => m a
-notTheAuthorError = throwError $ err403 { errBody = "Only author can choose alternative" }
-
-alreadyClosedError :: CanFail m => m a
-alreadyClosedError = throwError $ err409 { errBody = "Phrase is already closed" }
-
-inconsistentDataError :: CanFail m => m a
-inconsistentDataError = throwError $ err500 { errBody = "Inconsistent data" }
-
-dbError :: CanFail m => UsageError -> m a
-dbError e = do
-    $(logError) $ "Database error: " <> fromString (show e)
-    throwError $ err500 { errBody = "Database error" }
-
-internalError :: CanFail m => String -> m a
-internalError e = do
-    $(logError) $ "Server error: " <> fromString e
-    throwError $ err500 { errBody = fromString e }
+toHttpError :: AppError -> ServerError
+toHttpError NotFoundError = err404
+toHttpError UserAlreadyExistsError = err409 { errBody = "User already exists" }
+toHttpError NotTheAuthorError = err403 { errBody = "Only author can do that" }
+toHttpError PhraseAlreadyClosedError = err409 { errBody = "Phrase is already closed" }
+toHttpError InconsistentDataError = err500 { errBody = "Inconsistent data" }
+toHttpError (DbError e) = err500 { errBody = fromString $ show e }
+toHttpError (ExternalServiceError e) = err500 { errBody = fromString e }
+toHttpError (InternalError e) = err500 { errBody = fromString e }
 
 liftDbError :: CanFail m => Either UsageError a -> m a
-liftDbError = either dbError return
-
-liftServerError :: CanFail m => Either ServerError a -> m a
-liftServerError = either throwError return
+liftDbError = either (throwError . DbError) return

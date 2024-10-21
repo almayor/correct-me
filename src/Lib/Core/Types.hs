@@ -29,7 +29,10 @@ newtype PhraseID = PhraseID { unPhraseId :: Int32 }
 newtype AlternativeID = AlternativeID { unAlternativeId :: Int32 }
     deriving newtype (Eq, Show, FromJSON, ToJSON, FromHttpApiData)
 
-newtype SpellCheck = SpellCheck { unSpellcheck :: Value }
+newtype SpellCheckID = SpellCheckID { unSpellCheckId :: Int32 }
+    deriving newtype (Eq, Show, FromJSON, ToJSON)
+
+newtype SpellCheck = SpellCheck { unSpellCheck :: Value }
     deriving newtype (Show, FromJSON, ToJSON)
 
 -- location path, e.g. "/api/users/3"
@@ -51,7 +54,7 @@ data Alternative = Alternative
     , altPhraseId    :: PhraseID
     , altText        :: Text
     , altCreatedAt   :: UTCTime
-    -- , altSpellCheck  :: SpellCheck
+    , altSpellCheck  :: SpellCheck
     }
     deriving (Show, Generic)
     deriving (FromJSON, ToJSON)
@@ -65,7 +68,7 @@ data Phrase = Phrase
     , phraseIsOpen        :: Bool
     , phraseChosenAltId   :: Maybe AlternativeID
     , phraseNumAlts       :: Int32
-    -- , phraseSpellCheck    :: SpellCheck
+    , phraseSpellCheck    :: SpellCheck
     }
     deriving (Show, Generic)
     deriving (FromJSON, ToJSON)

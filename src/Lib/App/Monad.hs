@@ -6,6 +6,7 @@ module Lib.App.Monad
     , runAppAsIO
     , runAppAsHandler
     , WithDb(..)
+    , HasSpeller(..)
     ) where
 
 import Control.Monad (when)
@@ -14,30 +15,34 @@ import Control.Monad.Except (ExceptT, runExceptT)
 import Control.Monad.Error.Class
 import Control.Monad.Logger
 import Control.Exception (throwIO)
+import Data.Text (Text)
+import Data.Bifunctor (first)
+
 import Hasql.Pool (Pool)
-import Servant (ServerError, Handler)
+import Servant (Handler)
 
 import Lib.Core.Types
-import Data.Text (Text)
+import Lib.App.Error
 
 type LogAction = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
-type SpellerAction = Text -> IO SpellCheck
+type SpellerAction = Text -> App SpellCheck
 
 data Env = Env
     { envDbPool         :: !Pool
     , envLogAction      :: LogAction
     , envLogLevel       :: LogLevel
+    , envSpellerAction  :: SpellerAction
     }
 
 newtype App a = App
-    { unApp :: ReaderT Env (ExceptT ServerError IO) a }
+    { unApp :: ReaderT Env (ExceptT AppError IO) a }
     deriving newtype
         ( Functor
         , Applicative
         , Monad
         , MonadIO
         , MonadReader Env
-        , MonadError ServerError
+        , MonadError AppError
         )
 
 instance MonadLogger App where
@@ -55,15 +60,15 @@ instance WithDb App where
         pool <- asks envDbPool
         liftIO $ f pool
 
--- class HasSpeller m where
---     runSpeller :: Text -> m SpellCheck
+class HasSpeller m where
+    runSpeller :: Text -> m SpellCheck
 
--- instance HasSpeller App where
---     runSpeller t = do
---         action <- asks envSpellerAction
---         liftIO $ action t
+instance HasSpeller App where
+    runSpeller t = do
+        action <- asks envSpellerAction
+        action t
 
-runApp :: Env -> App a -> IO (Either ServerError a)
+runApp :: Env -> App a -> IO (Either AppError a)
 runApp env app = runExceptT $ runReaderT (unApp app) env
 
 runAppAsIO :: Env -> App a -> IO a
@@ -72,4 +77,4 @@ runAppAsIO env app = runApp env app >>= either throwIO return
 runAppAsHandler :: Env -> App a -> Handler a
 runAppAsHandler env app = do
     res <- liftIO $ runApp env app
-    liftEither res
+    liftEither $ first toHttpError res

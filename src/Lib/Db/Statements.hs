@@ -1,11 +1,28 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Functor law" #-}
 
-module Lib.Db.Statements where
+module Lib.Db.Statements (
+    userExistsByNameSt,
+    userGetByUsernameSt,
+    userGetPasswordSt,
+    userGetSt,
+    usersListSt,
+    userInsertSt,
+    phraseGetSt,
+    phraseListSt,
+    phraseInsertSt,
+    phraseSetChosenAltSt,
+    alternativeGetSt,
+    alternativeListByPhraseSt,
+    alternativeListSt,
+    alternativeInsertSt,
+    spellCheckInsertSt
+) where
 
 import Data.Text (Text)
 import Data.Vector (Vector)
 import Data.Functor.Contravariant (contramap)
+import Data.Tuple.Select (sel1, sel2, sel3, sel4)
 
 import Hasql.Statement (Statement (..))
 import qualified Hasql.Decoders as D
@@ -73,8 +90,8 @@ userInsertSt = Statement sql encoder decoder True
       "INSERT INTO users (username, password) \
       \VALUES ($1 :: text, $2 :: text) \
       \RETURNING id :: int4"
-    encoder = contramap (unUserName . fst) (E.param (E.nonNullable E.text))
-           <> contramap (unPasswordHash . snd) (E.param (E.nonNullable E.text))
+    encoder = contramap (unUserName . sel1) (E.param (E.nonNullable E.text))
+           <> contramap (unPasswordHash . sel2) (E.param (E.nonNullable E.text))
     decoder = D.singleRow (UserID <$> D.column (D.nonNullable D.int4))
 
 phraseGetSt :: Statement PhraseID (Maybe Phrase)
@@ -83,8 +100,10 @@ phraseGetSt = Statement sql encoder decoder True
     sql = 
       "SELECT id :: int4, author_id :: int4, text :: text, created_at :: timestamptz, \
       \is_open :: bool, chosen_alt_id :: int4?, \
-      \(SELECT COUNT(*) FROM alternatives WHERE phrase_id = $1 :: int4) :: int4 \
+      \(SELECT COUNT(*) FROM alternatives WHERE phrase_id = $1 :: int4) :: int4, \
+      \ spellcheck.data :: json \
       \FROM phrases \
+      \JOIN spellcheck ON spellcheck.id = phrases.spellcheck_id \
       \WHERE id = $1 :: int4"
     encoder = contramap unPhraseId (E.param (E.nonNullable E.int4))
     decoder = D.rowMaybe $ Phrase
@@ -94,7 +113,8 @@ phraseGetSt = Statement sql encoder decoder True
       <*> D.column (D.nonNullable D.timestamptz)
       <*> D.column (D.nonNullable D.bool)
       <*> (fmap AlternativeID <$> D.column (D.nullable D.int4))
-      <*> D.column (D.nonNullable D.int4)
+       <*> D.column (D.nonNullable D.int4)
+      <*> (SpellCheck <$> D.column (D.nonNullable D.json))
 
 phraseListSt :: Statement (Bool, Maybe UserID) (Vector PhraseID)
 phraseListSt = Statement sql encoder decoder True
@@ -105,19 +125,20 @@ phraseListSt = Statement sql encoder decoder True
       \WHERE (NOT $1 :: bool OR is_open = $1 :: bool) \
       \AND ($2 IS NULL OR author_id = $2) \
       \ORDER BY created_at DESC"
-    encoder = contramap fst (E.param (E.nonNullable E.bool))
-           <> contramap (fmap unUserId . snd) (E.param (E.nullable E.int4))
+    encoder = contramap sel1 (E.param (E.nonNullable E.bool))
+           <> contramap (fmap unUserId . sel2) (E.param (E.nullable E.int4))
     decoder = D.rowVector (PhraseID <$> D.column (D.nonNullable D.int4))
 
-phraseInsertSt :: Statement (UserID, Text) PhraseID
+phraseInsertSt :: Statement (UserID, Text, SpellCheckID) PhraseID
 phraseInsertSt = Statement sql encoder decoder True
   where
     sql = 
-      "INSERT INTO phrases (author_id, text) \
-      \VALUES ($1 :: int4, $2 :: text) \
+      "INSERT INTO phrases (author_id, text, spellcheck_id) \
+      \VALUES ($1 :: int4, $2 :: text, $3 :: int4) \
       \RETURNING id :: int4"
-    encoder = contramap (unUserId . fst) (E.param (E.nonNullable E.int4))
-           <> contramap snd (E.param (E.nonNullable E.text))
+    encoder = contramap (unUserId . sel1) (E.param (E.nonNullable E.int4))
+           <> contramap sel2 (E.param (E.nonNullable E.text))
+           <> contramap (unSpellCheckId . sel3) (E.param (E.nonNullable E.int4))
     decoder = D.singleRow (PhraseID <$> D.column (D.nonNullable D.int4))
 
 phraseSetChosenAltSt :: Statement (PhraseID, AlternativeID) ()
@@ -127,16 +148,18 @@ phraseSetChosenAltSt = Statement sql encoder decoder True
       "UPDATE phrases \
       \SET chosen_alt_id = $2 :: int4, is_open = FALSE \
       \WHERE id = $1 :: int4"
-    encoder = contramap (unPhraseId . fst) (E.param (E.nonNullable E.int4))
-           <> contramap (unAlternativeId . snd) (E.param (E.nonNullable E.int4))
+    encoder = contramap (unPhraseId . sel1) (E.param (E.nonNullable E.int4))
+           <> contramap (unAlternativeId . sel2) (E.param (E.nonNullable E.int4))
     decoder = D.noResult
 
 alternativeGetSt :: Statement AlternativeID (Maybe Alternative)
 alternativeGetSt = Statement sql encoder decoder True
   where
     sql = 
-      "SELECT id :: int4, author_id :: int4, phrase_id :: int4, text :: text, created_at :: timestamptz \
+      "SELECT id :: int4, author_id :: int4, phrase_id :: int4, text :: text, created_at :: timestamptz, \
+      \spellcheck.data :: json \
       \FROM alternatives \
+      \JOIN spellcheck ON spellcheck.id = alternatives.spellcheck_id \
       \WHERE id = $1 :: int4"
     encoder = contramap unAlternativeId (E.param (E.nonNullable E.int4))
     decoder = D.rowMaybe $ Alternative
@@ -145,6 +168,7 @@ alternativeGetSt = Statement sql encoder decoder True
       <*> (PhraseID <$> D.column (D.nonNullable D.int4))
       <*> D.column (D.nonNullable D.text)
       <*> D.column (D.nonNullable D.timestamptz)
+      <*> (SpellCheck <$> D.column (D.nonNullable D.json))
 
 alternativeListByPhraseSt :: Statement PhraseID (Vector AlternativeID)
 alternativeListByPhraseSt = Statement sql encoder decoder True
@@ -168,17 +192,28 @@ alternativeListSt = Statement sql encoder decoder True
     encoder = contramap (fmap unUserId) (E.param (E.nullable E.int4))
     decoder = D.rowVector (AlternativeID <$> D.column (D.nonNullable D.int4))
 
-alternativeInsertSt :: Statement (UserID, PhraseID, Text) AlternativeID
+alternativeInsertSt :: Statement (UserID, PhraseID, Text, SpellCheckID) AlternativeID
 alternativeInsertSt = Statement sql encoder decoder True
   where
     sql = 
-      "INSERT INTO alternatives (author_id, phrase_id, text) \
-      \VALUES ($1 :: int4, $2 :: int4, $3 :: text) \
+      "INSERT INTO alternatives (author_id, phrase_id, text, spellcheck_id) \
+      \VALUES ($1 :: int4, $2 :: int4, $3 :: text, $4 :: int4) \
       \RETURNING id :: int4"
-    encoder = contramap (\(UserID uid, _, _) -> uid) (E.param (E.nonNullable E.int4))
-           <> contramap (\(_, PhraseID pid, _) -> pid) (E.param (E.nonNullable E.int4))
-           <> contramap (\(_, _, txt) -> txt) (E.param (E.nonNullable E.text))
+    encoder = contramap (unUserId . sel1) (E.param (E.nonNullable E.int4))
+           <> contramap (unPhraseId . sel2) (E.param (E.nonNullable E.int4))
+           <> contramap sel3 (E.param (E.nonNullable E.text))
+           <> contramap (unSpellCheckId . sel4) (E.param (E.nonNullable E.int4))
     decoder = D.singleRow (AlternativeID <$> D.column (D.nonNullable D.int4))
+  
+spellCheckInsertSt :: Statement SpellCheck SpellCheckID
+spellCheckInsertSt = Statement sql encoder decoder True
+  where
+    sql = 
+      "INSERT INTO spellcheck (data) \
+      \VALUES ($1 :: json) \
+      \RETURNING id :: int4"
+    encoder = contramap unSpellCheck (E.param (E.nonNullable E.json))
+    decoder = D.singleRow (SpellCheckID <$> D.column (D.nonNullable D.int4))
 
 
 

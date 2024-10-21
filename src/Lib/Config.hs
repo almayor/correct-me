@@ -21,7 +21,7 @@ data AppConfig = AppConfig
     , configDbUser          :: !ByteString
     , configDbPass          :: !ByteString
     , configSpellerEnabled  :: !Bool
-    , configSpellerUrl      :: !URI
+    , configSpellerUri      :: !URI
     }
 
 -- Define the TomlBiMap for URI
@@ -41,7 +41,7 @@ configCodec = AppConfig
     <*> Toml.byteString "db.user"   .= configDbUser
     <*> Toml.byteString "db.pass"   .= configDbPass
     <*> Toml.bool "speller.enabled" .= configSpellerEnabled
-    <*> uriCodec "speller.url"      .= configSpellerUrl
+    <*> uriCodec "speller.url"      .= configSpellerUri
 
 loadConfig :: IO AppConfig
 loadConfig = do

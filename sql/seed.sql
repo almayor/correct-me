@@ -14,17 +14,32 @@ VALUES ('testuser3', '$2a$12$3t1JnhMJ.HLddNlyn.8Keekk00LdZVaYwpiRE8vckUjq7LUm3.v
 -- inserting phrase1 and its alternatives
 DO $$
 DECLARE new_phrase_id PHRASES.id%TYPE;
+DECLARE new_phrase_spellcheck_id SPELLCHECK.id%TYPE;
+DECLARE new_altA_spellcheck_id SPELLCHECK.id%TYPE;
+DECLARE new_altB_spellcheck_id SPELLCHECK.id%TYPE;
 BEGIN
 
-INSERT INTO phrases (text, author_id)
-VALUES ('phrase1 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'))
+INSERT INTO spellcheck (data)
+VALUES ('[]')
+RETURNING id INTO new_phrase_spellcheck_id;
+
+INSERT INTO phrases (text, author_id, spellcheck_id)
+VALUES ('phrase1 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'), new_phrase_spellcheck_id)
 RETURNING id INTO new_phrase_id;
 
-INSERT INTO alternatives (phrase_id, text, author_id)
-VALUES (new_phrase_id, 'alt to phrase1 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'));
+INSERT INTO spellcheck (data)
+VALUES ('[]')
+RETURNING id INTO new_altA_spellcheck_id;
 
-INSERT INTO alternatives (phrase_id, text, author_id)
-VALUES (new_phrase_id, 'alt to phrase1 by testuser2', (SELECT id FROM users WHERE username = 'testuser2'));
+INSERT INTO alternatives (phrase_id, text, author_id, spellcheck_id)
+VALUES (new_phrase_id, 'alt to phrase1 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'), new_altA_spellcheck_id);
+
+INSERT INTO spellcheck (data)
+VALUES ('[]')
+RETURNING id INTO new_altB_spellcheck_id;
+
+INSERT INTO alternatives (phrase_id, text, author_id, spellcheck_id)
+VALUES (new_phrase_id, 'alt to phrase1 by testuser2', (SELECT id FROM users WHERE username = 'testuser2'), new_altB_spellcheck_id);
 
 END$$;
 
@@ -33,20 +48,40 @@ END$$;
 DO $$
 DECLARE new_phrase_id PHRASES.id%TYPE;
 DECLARE new_alt_id ALTERNATIVES.id%TYPE;
+DECLARE new_phrase_spellcheck_id SPELLCHECK.id%TYPE;
+DECLARE new_altA_spellcheck_id SPELLCHECK.id%TYPE;
+DECLARE new_altB_spellcheck_id SPELLCHECK.id%TYPE;
+DECLARE new_altC_spellcheck_id SPELLCHECK.id%TYPE;
 BEGIN
 
-INSERT INTO phrases (text, author_id)
-VALUES ('phrase2 by testuser3', (SELECT id FROM users WHERE username = 'testuser3'))
+INSERT INTO spellcheck (data)
+VALUES ('[{"code":1,"pos":0,"row":0,"col":0,"len":7,"word":"phrase2","s":["phrase 2","phase 2","phrases 2"]}]')
+RETURNING id INTO new_phrase_spellcheck_id;
+
+INSERT INTO phrases (text, author_id, spellcheck_id)
+VALUES ('phrase2 by testuser3', (SELECT id FROM users WHERE username = 'testuser3'), new_phrase_spellcheck_id)
 RETURNING id INTO new_phrase_id;
 
-INSERT INTO alternatives (phrase_id, text, author_id)
-VALUES (new_phrase_id, 'first alt to phrase2 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'));
+INSERT INTO spellcheck (data)
+VALUES ('[{"code":1,"pos":13,"row":0,"col":13,"len":7,"word":"phrase2","s":["phrase 2","phrase2"]}]')
+RETURNING id INTO new_altA_spellcheck_id;
 
-INSERT INTO alternatives (phrase_id, text, author_id)
-VALUES (new_phrase_id, 'second alt to phrase2 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'));
+INSERT INTO alternatives (phrase_id, text, author_id, spellcheck_id)
+VALUES (new_phrase_id, 'first alt to phrase2 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'), new_altA_spellcheck_id);
 
-INSERT INTO alternatives (phrase_id, text, author_id)
-VALUES (new_phrase_id, 'alt to phrase2 by testuser2', (SELECT id FROM users WHERE username = 'testuser2'))
+INSERT INTO spellcheck (data)
+VALUES ('[{"code":1,"pos":14,"row":0,"col":14,"len":7,"word":"phrase2","s":["phrase 2","phrase2","phase 2"]}]')
+RETURNING id INTO new_altB_spellcheck_id;
+
+INSERT INTO alternatives (phrase_id, text, author_id, spellcheck_id)
+VALUES (new_phrase_id, 'second alt to phrase2 by testuser1', (SELECT id FROM users WHERE username = 'testuser1'), new_altB_spellcheck_id);
+
+INSERT INTO spellcheck (data)
+VALUES ('[]')
+RETURNING id INTO new_altC_spellcheck_id;
+
+INSERT INTO alternatives (phrase_id, text, author_id, spellcheck_id)
+VALUES (new_phrase_id, 'alt to phrase2 by testuser2', (SELECT id FROM users WHERE username = 'testuser2'), new_altC_spellcheck_id)
 RETURNING id INTO new_alt_id;
 
 UPDATE phrases

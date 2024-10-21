@@ -6,3 +6,6 @@ db.port         = 5432
 db.name         = "mydb"
 db.user         = "myuser"
 db.pass         = "mypassword"
+
+speller.url     = "https://speller.yandex.net/services/spellservice.json/checkText"
+speller.enabled = false

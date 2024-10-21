@@ -10,6 +10,7 @@ import Data.ByteString (ByteString)
 
 import Lib.Core.Types
 import Lib.App.Error
+import Control.Monad.Except (throwError)
 
 bs2Password :: ByteString -> PasswordPlain
 bs2Password = PasswordPlain . decodeUtf8
@@ -25,7 +26,7 @@ mkPasswordHashWithPolicy policy (PasswordPlain pwd) = do
     hashBS <- liftIO $ BCrypt.hashPasswordUsingPolicy policy pwdBS
     case hashBS of
         Just hashBS' -> pure . PasswordHash . decodeUtf8 $ hashBS'
-        Nothing -> internalError "Failed to hash password"
+        Nothing -> throwError $ InternalError "Failed to hash password"
 
 -- | Generates the password hash with fast hashing policy.
 mkPasswordHash ::

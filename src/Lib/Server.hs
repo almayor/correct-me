@@ -5,7 +5,6 @@ module Lib.Server
 
 import Data.Vector (Vector)
 import Control.Monad (when)
-import Control.Monad.Logger
 import Servant
 
 import Lib.App.Monad
@@ -39,19 +38,23 @@ server = publicH :<|> protectedH
 registerH :: UserReq -> App LocPath
 registerH (UserReq userName password) = do
     exists <- execute userExistsByNameSt userName
-    when exists userAlreadyExistsError
+    when exists $ throwError UserAlreadyExistsError
     pwdHash <- mkPasswordHash password
     userId <- execute userInsertSt (userName, pwdHash)
     return $ userId2Loc userId
 
 insertPhraseH :: User -> PhraseReq -> App LocPath
 insertPhraseH (User { userId }) (PhraseReq { phraseReqText }) = do
-    phraseId <- execute phraseInsertSt (userId, phraseReqText)
+    spellCheck <- runSpeller phraseReqText
+    spellCheckId <- execute spellCheckInsertSt spellCheck
+    phraseId <- execute phraseInsertSt (userId, phraseReqText, spellCheckId)
     return $ phraseId2Loc phraseId
 
 insertAlternativeH :: User -> PhraseID -> AlternativeReq -> App LocPath
 insertAlternativeH (User { userId }) phraseId (AlternativeReq { altReqText }) = do
-    altId <- execute alternativeInsertSt (userId, phraseId, altReqText)
+    spellCheck <- runSpeller altReqText
+    spellCheckId <- execute spellCheckInsertSt spellCheck
+    altId <- execute alternativeInsertSt (userId, phraseId, altReqText, spellCheckId)
     return $ alternativeId2Loc altId
 
 listUsersH :: User -> App (Vector LocPath)
@@ -82,23 +85,23 @@ listAlternatives _ authorId = do
 getUserH :: User -> UserID -> App User
 getUserH _ userId = do
     entry <- execute userGetSt userId
-    maybe notFoundError return entry
+    maybe (throwError NotFoundError) return entry
 
 getPhraseH :: User -> PhraseID -> App Phrase
 getPhraseH _ phraseId = do
     entry <- execute phraseGetSt phraseId
-    maybe notFoundError return entry
+    maybe (throwError NotFoundError) return entry
 
 getAlternativeH :: User -> AlternativeID -> App Alternative
 getAlternativeH _ altId = do
     entry <- execute alternativeGetSt altId
-    maybe notFoundError return entry
+    maybe (throwError NotFoundError) return entry
 
 setAlternativeH :: User -> AlternativeID -> App LocPath
 setAlternativeH (User { userId }) altId = do
-    alt <- execute alternativeGetSt altId >>= maybe notFoundError return
-    phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe inconsistentDataError return
-    when (phraseAuthorId phrase /= userId) notTheAuthorError
+    alt <- execute alternativeGetSt altId >>= maybe (throwError NotFoundError) return
+    phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe (throwError InconsistentDataError) return
+    when (phraseAuthorId phrase /= userId) $ throwError NotTheAuthorError
     execute phraseSetChosenAltSt (altPhraseId alt, altId)
     return $ phraseId2Loc (altPhraseId alt)
 

@@ -32,6 +32,7 @@ library
       Lib.App.Monad
       Lib.Config
       Lib.Core.Password
+      Lib.Core.Speller
       Lib.Core.Types
       Lib.Core.Username
       Lib.Db
@@ -63,8 +64,11 @@ library
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , lens
+    , lens-aeson
     , monad-logger
     , mtl
+    , network-uri
     , profunctors
     , servant
     , servant-server
@@ -79,6 +83,7 @@ library
     , wai-extra
     , wai-logger
     , warp >=3.2.4
+    , wreq
   default-language: Haskell2010
 
 executable correct-me-v2-exe
@@ -105,8 +110,11 @@ executable correct-me-v2-exe
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , lens
+    , lens-aeson
     , monad-logger
     , mtl
+    , network-uri
     , profunctors
     , servant
     , servant-server
@@ -121,6 +129,7 @@ executable correct-me-v2-exe
     , wai-extra
     , wai-logger
     , warp >=3.2.4
+    , wreq
   default-language: Haskell2010
 
 test-suite correct-me-v2-test
@@ -148,8 +157,11 @@ test-suite correct-me-v2-test
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , lens
+    , lens-aeson
     , monad-logger
     , mtl
+    , network-uri
     , profunctors
     , servant
     , servant-server
@@ -164,4 +176,5 @@ test-suite correct-me-v2-test
     , wai-extra
     , wai-logger
     , warp >=3.2.4
+    , wreq
   default-language: Haskell2010
