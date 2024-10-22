@@ -28,16 +28,16 @@ externalSpeller uri text = do
         Right r -> handleResponse r
   where
     handleError e = do
-        $logError $ "Failed to send request: " <> (pack . show) e
-        throwError $ ExternalServiceError ("Failed to send request: " <> show e)
+        $logError $ "Failed to send spellcheck request: " <> (pack . show) e
+        throwError $ ExternalServiceError ("Failed to send request to spellcheck: " <> show e)
     
     handleResponse r = do
         let body = r ^. responseBody
-        $logInfo $ "Received response: " <> (pack . B.unpack) body
+        $logInfo $ "Received spellcheck: " <> (pack . B.unpack) body
         case decode body of
             Nothing -> do
-                $logError "Failed to parse response"
-                throwError $ InternalError "Failed to parse response"
+                $logError "Failed to parse spellcheck response"
+                throwError $ InternalError "Failed to parse spellcheck response"
             Just spellCheck -> return spellCheck
 
 -- | Mock spellchecker that always returns empty list of errors.

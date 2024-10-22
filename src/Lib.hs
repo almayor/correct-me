@@ -88,5 +88,5 @@ initDb :: IO ()
 initDb = do
     config <- loadConfig
     env <- mkEnv config
-    putStrLn "Initialising and seeding database"
+    hPutStrLn stderr "Initialising and seeding database"
     runAppAsIO env prepareSeededDb
