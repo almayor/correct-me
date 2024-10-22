@@ -18,13 +18,13 @@ import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
 
-appServer :: ServerT AppAPI App
+appServer :: ServerT AppAPI AppM
 appServer = publicAppServer :<|> protectedAppServer
 
-publicAppServer :: ServerT PublicAPI App
+publicAppServer :: ServerT PublicAppAPI AppM
 publicAppServer = registerH
 
-protectedAppServer :: AuthResult User -> ServerT ProtectedAPI App
+protectedAppServer :: AuthResult User -> ServerT ProtectedAppAPI AppM
 protectedAppServer (Authenticated user) = userH user :<|> phraseH user :<|> alternativeH user
     where
     userH u =
@@ -43,7 +43,7 @@ protectedAppServer (Authenticated user) = userH user :<|> phraseH user :<|> alte
         :<|> chooseAlternativeH u
 protectedAppServer _ = throwAll NotAuthenticatedError
 
-registerH :: UserReq -> App LocPath
+registerH :: UserReq -> AppM LocPath
 registerH (UserReq userName password) = do
     exists <- execute userExistsByNameSt userName
     when exists $ throwError UserAlreadyExistsError
@@ -51,61 +51,61 @@ registerH (UserReq userName password) = do
     userId <- execute userInsertSt (userName, pwdHash)
     return $ userId2Loc userId
 
-insertPhraseH :: User -> PhraseReq -> App LocPath
+insertPhraseH :: User -> PhraseReq -> AppM LocPath
 insertPhraseH (User { userId }) (PhraseReq { phraseReqText }) = do
     spellCheck <- runSpeller phraseReqText
     spellCheckId <- execute spellCheckInsertSt spellCheck
     phraseId <- execute phraseInsertSt (userId, phraseReqText, spellCheckId)
     return $ phraseId2Loc phraseId
 
-insertAlternativeH :: User -> PhraseID -> AlternativeReq -> App LocPath
+insertAlternativeH :: User -> PhraseID -> AlternativeReq -> AppM LocPath
 insertAlternativeH (User { userId }) phraseId (AlternativeReq { altReqText }) = do
     spellCheck <- runSpeller altReqText
     spellCheckId <- execute spellCheckInsertSt spellCheck
     altId <- execute alternativeInsertSt (userId, phraseId, altReqText, spellCheckId)
     return $ alternativeId2Loc altId
 
-listUsersH :: User -> App (Vector LocPath)
+listUsersH :: User -> AppM (Vector LocPath)
 listUsersH _ = do
     entries <- execute usersListSt ()
     return $ userId2Loc <$> entries
 
-listPhrasesByUserH :: User -> UserID -> Bool -> App (Vector LocPath)
+listPhrasesByUserH :: User -> UserID -> Bool -> AppM (Vector LocPath)
 listPhrasesByUserH _ authorId isOpen = do
     entries <- execute phraseListSt (isOpen, Just authorId)
     return $ phraseId2Loc <$> entries
 
-listPhrasesH :: User -> Bool -> App (Vector LocPath)
+listPhrasesH :: User -> Bool -> AppM (Vector LocPath)
 listPhrasesH _ isOpen = do
     entries <- execute phraseListSt (isOpen, Nothing)
     return $ phraseId2Loc <$> entries
 
-listAlternativesByPhraseH :: User -> PhraseID -> App (Vector LocPath)
+listAlternativesByPhraseH :: User -> PhraseID -> AppM (Vector LocPath)
 listAlternativesByPhraseH _ phraseId = do
     entries <- execute alternativeListByPhraseSt phraseId
     return $ alternativeId2Loc <$> entries
 
-listAlternatives :: User -> Maybe UserID -> App (Vector LocPath)
+listAlternatives :: User -> Maybe UserID -> AppM (Vector LocPath)
 listAlternatives _ authorId = do
     entries <- execute alternativeListSt authorId
     return $ alternativeId2Loc <$> entries
 
-getUserH :: User -> UserID -> App User
+getUserH :: User -> UserID -> AppM User
 getUserH _ userId = do
     entry <- execute userGetSt userId
     maybe (throwError NotFoundError) return entry
 
-getPhraseH :: User -> PhraseID -> App Phrase
+getPhraseH :: User -> PhraseID -> AppM Phrase
 getPhraseH _ phraseId = do
     entry <- execute phraseGetSt phraseId
     maybe (throwError NotFoundError) return entry
 
-getAlternativeH :: User -> AlternativeID -> App Alternative
+getAlternativeH :: User -> AlternativeID -> AppM Alternative
 getAlternativeH _ altId = do
     entry <- execute alternativeGetSt altId
     maybe (throwError NotFoundError) return entry
 
-chooseAlternativeH :: User -> AlternativeID -> App LocPath
+chooseAlternativeH :: User -> AlternativeID -> AppM LocPath
 chooseAlternativeH (User { userId }) altId = do
     alt <- execute alternativeGetSt altId >>= maybe (throwError NotFoundError) return
     phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe (throwError InconsistentDataError) return

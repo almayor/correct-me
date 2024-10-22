@@ -1,7 +1,7 @@
 module Lib.App.Monad
     ( LogAction
     , Env(..)
-    , App(..)
+    , AppM(..)
     , runApp
     , runAppAsIO
     , runAppAsHandler
@@ -26,7 +26,7 @@ import Lib.Types
 import Lib.App.Error
 
 type LogAction = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
-type SpellerAction = Text -> App SpellCheck
+type SpellerAction = Text -> AppM SpellCheck
 
 data Env = Env
     { envDbPool         :: !Pool
@@ -36,8 +36,8 @@ data Env = Env
     , envJWTKey         :: !JWK
     }
 
-newtype App a = App
-    { unApp :: ReaderT Env (ExceptT AppError IO) a }
+newtype AppM a = AppM
+    { unAppM :: ReaderT Env (ExceptT AppError IO) a }
     deriving newtype
         ( Functor
         , Applicative
@@ -47,7 +47,7 @@ newtype App a = App
         , MonadError AppError
         )
 
-instance MonadLogger App where
+instance MonadLogger AppM where
     monadLoggerLog loc source level msg = do
         Env { envLogAction, envLogLevel } <- ask
         when (level >= envLogLevel) $
@@ -57,7 +57,7 @@ instance MonadLogger App where
 class WithDb m where
     withPool :: (Pool -> IO a) -> m a
 
-instance WithDb App where
+instance WithDb AppM where
     withPool f = do
         pool <- asks envDbPool
         liftIO $ f pool
@@ -65,18 +65,18 @@ instance WithDb App where
 class HasSpeller m where
     runSpeller :: Text -> m SpellCheck
 
-instance HasSpeller App where
+instance HasSpeller AppM where
     runSpeller t = do
         action <- asks envSpellerAction
         action t
 
-runApp :: Env -> App a -> IO (Either AppError a)
-runApp env app = runExceptT $ runReaderT (unApp app) env
+runApp :: Env -> AppM a -> IO (Either AppError a)
+runApp env app = runExceptT $ runReaderT (unAppM app) env
 
-runAppAsIO :: Env -> App a -> IO a
+runAppAsIO :: Env -> AppM a -> IO a
 runAppAsIO env app = runApp env app >>= either throwIO return
 
-runAppAsHandler :: Env -> App a -> Handler a
+runAppAsHandler :: Env -> AppM a -> Handler a
 runAppAsHandler env app = do
     res <- liftIO $ runApp env app
     liftEither $ first toHttpError res

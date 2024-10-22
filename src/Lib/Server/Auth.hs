@@ -7,7 +7,7 @@ import Lib.App.Monad
 import Lib.Core.Password
 import Lib.Types
 
-authenticate' :: BasicAuthData -> App (AuthResult User)
+authenticate' :: BasicAuthData -> AppM (AuthResult User)
 authenticate' (BasicAuthData userNameBS passwordBS) = do
     let userName = bs2UserName userNameBS
     let password = bs2Password passwordBS

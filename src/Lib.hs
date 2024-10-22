@@ -41,8 +41,8 @@ mkEnv config = do
     let logAction = defaultOutput stdout
     let spellerAction = 
           if spellerEnabled config
-              then externalSpeller @App (spellerUri config)
-              else mockSpeller @App
+              then externalSpeller @AppM (spellerUri config)
+              else mockSpeller @AppM
     return Env
         { envDbPool = dbPool
         , envLogAction = logAction
