@@ -22,7 +22,7 @@ import Hasql.Pool (Pool)
 import Servant (Handler)
 import Crypto.JOSE.JWK (JWK)
 
-import Lib.Core.Types
+import Lib.Types
 import Lib.App.Error
 
 type LogAction = Loc -> LogSource -> LogLevel -> LogStr -> IO ()

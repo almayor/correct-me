@@ -2,7 +2,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Lib.Server.ThrowAll where
 
-import Control.Monad.Except (MonadError, throwError)
+import Control.Monad.Except (throwError)
 import Servant ((:<|>)(..))
 import Lib.App.Error (AppError)
 import Lib.App (App)

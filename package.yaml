@@ -21,9 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/alma
 
 dependencies:
   - aeson
+  - async
   - base >= 4.7 && < 5
   - bcrypt
   - bytestring
+  - casing
   - contravariant-extras
   - deriving-aeson
   - either
@@ -39,6 +41,7 @@ dependencies:
   - monad-logger
   - mtl
   - network-uri
+  - optics
   - profunctors
   - servant
   - servant-auth
@@ -47,6 +50,7 @@ dependencies:
   - servant-client
   - servant-server
   - servant-swagger
+  - servant-swagger-ui
   - swagger2
   - text
   - time
@@ -56,6 +60,7 @@ dependencies:
   - utf8-string
   - vector
   - wai
+  - wai-cors
   - wai-extra
   - wai-logger
   - warp >= 3.2.4

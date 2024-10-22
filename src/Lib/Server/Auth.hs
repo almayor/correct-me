@@ -5,8 +5,7 @@ import Servant.Auth.Server
 import Lib.Db
 import Lib.App.Monad
 import Lib.Core.Password
-import Lib.Core.Types
-import Lib.Core.Username
+import Lib.Types
 
 authenticate' :: BasicAuthData -> App (AuthResult User)
 authenticate' (BasicAuthData userNameBS passwordBS) = do

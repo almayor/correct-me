@@ -28,7 +28,7 @@ import Hasql.Statement (Statement (..))
 import qualified Hasql.Decoders as D
 import qualified Hasql.Encoders as E
 
-import Lib.Core.Types
+import Lib.Types
 
 userExistsByNameSt :: Statement UserName Bool
 userExistsByNameSt = Statement sql encoder decoder True

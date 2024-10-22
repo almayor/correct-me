@@ -1,16 +1,17 @@
 module Lib
     ( runServer
     , initDb
-    , showSwagger
+    , runSwagger
     ) where
 
 import Control.Monad.Logger
 import Hasql.Connection (settings)
 import Hasql.Pool (Pool)
 import qualified Hasql.Pool as Pool
-import System.IO (stdout)
-import Network.Wai.Handler.Warp (run)
+import System.IO (stdout, stderr, hPutStrLn)
+import Network.Wai.Handler.Warp (setPort, setBeforeMainLoop, defaultSettings, runSettings)
 import Network.Wai.Middleware.RequestLogger
+import Network.Wai.Middleware.Cors (simpleCors)
 import Network.Wai (Middleware)
 import Servant.Auth.Server (generateKey)
 
@@ -23,7 +24,7 @@ import Lib.Swagger
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
-    let conSettings = settings configDbHost (fromIntegral configDbPort) configDbUser configDbPass configDbName
+    let conSettings = settings dbHost (fromIntegral dbPort) dbUser dbPass dbName
         poolSize = 10
         poolAcquisitionTimeout = 10
         poolTimeout = 60 -- one minute
@@ -36,8 +37,8 @@ mkEnv config = do
     jwtKey <- generateKey
     let logAction = defaultOutput stdout
     let spellerAction = 
-          if configSpellerEnabled config
-              then externalSpeller @App (configSpellerUri config)
+          if spellerEnabled config
+              then externalSpeller @App (spellerUri config)
               else mockSpeller @App
     return Env
         { envDbPool = dbPool
@@ -60,11 +61,11 @@ runServer = do
     config <- loadConfig
     env <- mkEnv config
     loggers <- mkLoggers config
-    putStrLn $ "Starting server on port " ++ show (configAppPort config)
-    run (configAppPort config) $ loggers $ application env
-
-showSwagger :: IO ()
-showSwagger = print swaggerDoc
+    let warpSettings =
+            setPort (appPort config) $
+            setBeforeMainLoop (hPutStrLn stderr ("Starting server on port " ++ show (appPort config)))
+            defaultSettings
+    runSettings warpSettings $ simpleCors $ loggers $ application env
 
 initDb :: IO ()
 initDb = do
@@ -72,6 +73,12 @@ initDb = do
     env <- mkEnv config
     putStrLn "Initialising and seeding database"
     runAppAsIO env prepareSeededDb
-    
- 
 
+runSwagger :: IO ()
+runSwagger = do
+    config <- loadConfig
+    let warpSettings =
+            setPort (swaggerPort config) $
+            setBeforeMainLoop (hPutStrLn stderr ("Starting swagger on port " ++ show (swaggerPort config)))
+            defaultSettings
+    runSettings warpSettings $ applicationSwagger config

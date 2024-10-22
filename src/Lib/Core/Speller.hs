@@ -15,7 +15,7 @@ import Network.URI
 import Network.Wreq         -- The wreq library itself
 
 import Lib.App.Error
-import Lib.Core.Types (SpellCheck(..))
+import Lib.Types (SpellCheck(..))
 
 -- | Spellcheck the given text using Yandex Speller API.
 externalSpeller :: (MonadIO m, CanFail m) => URI -> Text -> m SpellCheck

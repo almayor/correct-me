@@ -13,15 +13,18 @@ import Data.Text (Text, pack, unpack)
 
 
 data AppConfig = AppConfig
-    { configAppDescription  :: !Text
-    , configAppPort         :: !Int
-    , configDbHost          :: !ByteString
-    , configDbPort          :: !Int
-    , configDbName          :: !ByteString
-    , configDbUser          :: !ByteString
-    , configDbPass          :: !ByteString
-    , configSpellerEnabled  :: !Bool
-    , configSpellerUri      :: !URI
+    { appName         :: !Text
+    , appDescription  :: !Text
+    , appPort         :: !Int
+    , appVersion      :: !Text
+    , dbHost          :: !ByteString
+    , dbPort          :: !Int
+    , dbName          :: !ByteString
+    , dbUser          :: !ByteString
+    , dbPass          :: !ByteString
+    , spellerEnabled  :: !Bool
+    , spellerUri      :: !URI
+    , swaggerPort     :: !Int
     }
 
 -- Define the TomlBiMap for URI
@@ -33,15 +36,18 @@ uriCodec = Toml.textBy bwd fwd
 
 configCodec :: TomlCodec AppConfig
 configCodec = AppConfig
-    <$> Toml.text "app.description" .= configAppDescription
-    <*> Toml.int "app.port"         .= configAppPort
-    <*> Toml.byteString "db.host"   .= configDbHost
-    <*> Toml.int "db.port"          .= configDbPort
-    <*> Toml.byteString "db.name"   .= configDbHost
-    <*> Toml.byteString "db.user"   .= configDbUser
-    <*> Toml.byteString "db.pass"   .= configDbPass
-    <*> Toml.bool "speller.enabled" .= configSpellerEnabled
-    <*> uriCodec "speller.url"      .= configSpellerUri
+    <$> Toml.text "app.title"       .= appName
+    <*> Toml.text "app.description" .= appDescription
+    <*> Toml.int "app.port"         .= appPort
+    <*> Toml.text "app.version"     .= appVersion
+    <*> Toml.byteString "db.host"   .= dbHost
+    <*> Toml.int "db.port"          .= dbPort
+    <*> Toml.byteString "db.name"   .= dbName
+    <*> Toml.byteString "db.user"   .= dbUser
+    <*> Toml.byteString "db.pass"   .= dbPass
+    <*> Toml.bool "speller.enabled" .= spellerEnabled
+    <*> uriCodec "speller.url"      .= spellerUri
+    <*> Toml.int "swagger.port"     .= swaggerPort
 
 loadConfig :: IO AppConfig
 loadConfig = do

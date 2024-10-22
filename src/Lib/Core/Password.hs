@@ -6,14 +6,10 @@ import qualified Crypto.BCrypt as BCrypt
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
-import Data.ByteString (ByteString)
 
-import Lib.Core.Types
+import Lib.Types
 import Lib.App.Error
 import Control.Monad.Except (throwError)
-
-bs2Password :: ByteString -> PasswordPlain
-bs2Password = PasswordPlain . decodeUtf8
 
 -- This has to be done in IO as generating the salt requires RNG.
 mkPasswordHashWithPolicy ::

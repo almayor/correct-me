@@ -1,5 +1,7 @@
-app.description = "correct-me"
+app.title       = "correct-me"
+app.description = "Submitting, reviewing, and improving message phrasing with built-in spellcheck"
 app.port        = 8080
+app.version     = "0.1"
 
 db.host         = "localhost"
 db.port         = 5432
@@ -8,4 +10,6 @@ db.user         = "myuser"
 db.pass         = "mypassword"
 
 speller.url     = "https://speller.yandex.net/services/spellservice.json/checkText"
-speller.enabled = false
+speller.enabled = true
+
+swagger.port    = 8081

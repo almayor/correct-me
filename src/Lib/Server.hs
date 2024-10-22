@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-orphans #-}
 module Lib.Server
         ( server
         , application
@@ -11,7 +12,7 @@ import Servant.Auth.Server hiding (throwAll)
 import Lib.App.Monad
 import Lib.App.Error
 import Lib.Server.ThrowAll
-import Lib.Core.Types
+import Lib.Types
 import Lib.Core.Password
 import Lib.Api
 import Lib.Server.Auth (authenticate)
@@ -24,19 +25,19 @@ publicServer :: ServerT PublicAPI App
 publicServer = registerH
 
 protectedServer :: AuthResult User -> ServerT ProtectedAPI App
-protectedServer (Authenticated u) = userH :<|> phraseH :<|> alternativeH
+protectedServer (Authenticated user) = userH user :<|> phraseH user :<|> alternativeH user
     where
-    userH =
+    userH u =
             listUsersH u
         :<|> getUserH u
         :<|> listPhrasesByUserH u
-    phraseH =
+    phraseH u =
             listPhrasesH u
         :<|> insertPhraseH u
         :<|> getPhraseH u
         :<|> listAlternativesByPhraseH u
         :<|> insertAlternativeH u
-    alternativeH =
+    alternativeH u =
             listAlternatives u
         :<|> getAlternativeH u
         :<|> setAlternativeH u

@@ -5,11 +5,10 @@
 module Lib.Api where
 
 import Servant hiding (BasicAuth)
-import Servant.Auth.Server hiding (Auth, BasicAuth, JWT)
 import Servant.Auth.Swagger 
 import Data.Vector (Vector)
 
-import Lib.Core.Types
+import Lib.Types
 
 -- POST /users/
 type RegisterAPI = "users" :> ReqBody '[JSON] UserReq :> PostCreated '[JSON] LocPath
@@ -47,7 +46,7 @@ type AlternativeAPI = "alternatives" :> (
 
 type PublicAPI = RegisterAPI
 type ProtectedAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
-type API = "api" :> (PublicAPI :<|> Auth '[BasicAuth] User :> ProtectedAPI) 
+type API = "api" :> (PublicAPI :<|> Auth '[BasicAuth, JWT] User :> ProtectedAPI) 
 
 userId2Loc :: UserID -> LocPath
 userId2Loc = LocPath . ("/api/users/" ++) . show

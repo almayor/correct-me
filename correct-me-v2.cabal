@@ -33,8 +33,7 @@ library
       Lib.Config
       Lib.Core.Password
       Lib.Core.Speller
-      Lib.Core.Types
-      Lib.Core.Username
+      Lib.Core.Utils
       Lib.Db
       Lib.Db.Functions
       Lib.Db.Schema
@@ -43,6 +42,7 @@ library
       Lib.Server.Auth
       Lib.Server.ThrowAll
       Lib.Swagger
+      Lib.Types
   other-modules:
       Paths_correct_me_v2
   autogen-modules:
@@ -54,9 +54,11 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
+    , async
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , casing
     , contravariant-extras
     , deriving-aeson
     , either
@@ -72,6 +74,7 @@ library
     , monad-logger
     , mtl
     , network-uri
+    , optics
     , profunctors
     , servant
     , servant-auth
@@ -80,6 +83,7 @@ library
     , servant-client
     , servant-server
     , servant-swagger
+    , servant-swagger-ui
     , swagger2
     , text
     , time
@@ -89,6 +93,7 @@ library
     , utf8-string
     , vector
     , wai
+    , wai-cors
     , wai-extra
     , wai-logger
     , warp >=3.2.4
@@ -106,9 +111,11 @@ executable correct-me-v2-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , async
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , casing
     , contravariant-extras
     , correct-me-v2
     , deriving-aeson
@@ -125,6 +132,7 @@ executable correct-me-v2-exe
     , monad-logger
     , mtl
     , network-uri
+    , optics
     , profunctors
     , servant
     , servant-auth
@@ -133,6 +141,7 @@ executable correct-me-v2-exe
     , servant-client
     , servant-server
     , servant-swagger
+    , servant-swagger-ui
     , swagger2
     , text
     , time
@@ -142,6 +151,7 @@ executable correct-me-v2-exe
     , utf8-string
     , vector
     , wai
+    , wai-cors
     , wai-extra
     , wai-logger
     , warp >=3.2.4
@@ -160,9 +170,11 @@ test-suite correct-me-v2-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
+    , async
     , base >=4.7 && <5
     , bcrypt
     , bytestring
+    , casing
     , contravariant-extras
     , correct-me-v2
     , deriving-aeson
@@ -179,6 +191,7 @@ test-suite correct-me-v2-test
     , monad-logger
     , mtl
     , network-uri
+    , optics
     , profunctors
     , servant
     , servant-auth
@@ -187,6 +200,7 @@ test-suite correct-me-v2-test
     , servant-client
     , servant-server
     , servant-swagger
+    , servant-swagger-ui
     , swagger2
     , text
     , time
@@ -196,6 +210,7 @@ test-suite correct-me-v2-test
     , utf8-string
     , vector
     , wai
+    , wai-cors
     , wai-extra
     , wai-logger
     , warp >=3.2.4

@@ -1,17 +1,29 @@
-module Lib.Swagger where
+module Lib.Swagger (
+    applicationSwagger
+    ) where
 
-import Servant.Swagger
 import Data.Swagger
-import Data.Proxy
-
-import Lib.Api
+import Data.String (IsString(fromString))
 import Control.Lens
 
-swaggerDoc :: Swagger
-swaggerDoc = toSwagger (Proxy @API)
-    & info.title        .~ "User API"
-    & info.version      .~ "1.0"
-    & info.description  ?~ "This is an API for the Users service"
-    & info.license      ?~ "MIT"
-    & host              ?~ "example.com"
+import Servant.Swagger
+import Servant.Swagger.UI
+import Servant
 
+import Lib.Api
+import Lib.Config
+
+swaggerDoc :: AppConfig -> Swagger
+swaggerDoc config = toSwagger (Proxy @API)
+    & info.title        .~ appName config
+    & info.version      .~ appVersion config
+    & info.description  ?~ appDescription config
+    & host              ?~ fromString ("localhost:" <> show (appPort config))
+
+type SwaggerAPI = SwaggerSchemaUI "swagger-ui" "swagger.json"
+
+serverSwagger :: AppConfig -> Server SwaggerAPI
+serverSwagger = swaggerSchemaUIServer . swaggerDoc
+
+applicationSwagger :: AppConfig -> Application
+applicationSwagger = serve (Proxy @SwaggerAPI) . serverSwagger

@@ -1,9 +1,10 @@
 module Main (main) where
 
+import Control.Concurrent.Async (async)
 import Lib
 
 main :: IO ()
 main = do
-    showSwagger
     initDb
-    runServer
+    _ <- async runServer
+    runSwagger
