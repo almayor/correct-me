@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Lib.Server
-        ( server
+        ( appServer
         , application
         ) where
 
@@ -18,8 +18,8 @@ import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
 
-server :: ServerT AppAPI App
-server = publicServer :<|> protectedServer
+appServer :: ServerT AppAPI App
+appServer = publicServer :<|> protectedServer
 
 publicServer :: ServerT PublicAPI App
 publicServer = registerH
@@ -128,5 +128,5 @@ application env =
             (Proxy @AppAPI)
             (Proxy @'[BasicAuthCfg, CookieSettings, JWTSettings])
             (runAppAsHandler env)
-            server
+            appServer
     in serveWithContext (Proxy @AppAPI) ctx hoistedServer
