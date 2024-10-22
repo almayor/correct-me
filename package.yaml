@@ -100,7 +100,7 @@ library:
                     , TypeOperators
 
 executables:
-  correct-me-exe:
+  correct-me:
     main:                Main.hs
     source-dirs:         exe
     ghc-options:
