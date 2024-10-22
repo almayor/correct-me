@@ -57,9 +57,9 @@ type AlternativeAPI = "alternatives" :> (
         :> Capture "alternativeId" AlternativeID :> "choose" :> Patch '[JSON] LocPath
     )
 
-type PublicAPI = RegisterAPI
-type ProtectedAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
-type AppAPI = "api" :> (PublicAPI :<|> Auth '[BasicAuth, JWT] User :> ProtectedAPI) 
+type PublicAppAPI = RegisterAPI
+type ProtectedAppAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
+type AppAPI = "api" :> (PublicAppAPI :<|> Auth '[BasicAuth, JWT] User :> ProtectedAppAPI) 
 
 userId2Loc :: UserID -> LocPath
 userId2Loc = LocPath . ("/api/users/" ++) . show

@@ -19,13 +19,13 @@ import Lib.Server.Auth (authenticate)
 import Lib.Db
 
 appServer :: ServerT AppAPI App
-appServer = publicServer :<|> protectedServer
+appServer = publicAppServer :<|> protectedAppServer
 
-publicServer :: ServerT PublicAPI App
-publicServer = registerH
+publicAppServer :: ServerT PublicAPI App
+publicAppServer = registerH
 
-protectedServer :: AuthResult User -> ServerT ProtectedAPI App
-protectedServer (Authenticated user) = userH user :<|> phraseH user :<|> alternativeH user
+protectedAppServer :: AuthResult User -> ServerT ProtectedAPI App
+protectedAppServer (Authenticated user) = userH user :<|> phraseH user :<|> alternativeH user
     where
     userH u =
             listUsersH u
@@ -41,7 +41,7 @@ protectedServer (Authenticated user) = userH user :<|> phraseH user :<|> alterna
             listAlternatives u
         :<|> getAlternativeH u
         :<|> chooseAlternativeH u
-protectedServer _ = throwAll NotAuthenticatedError
+protectedAppServer _ = throwAll NotAuthenticatedError
 
 registerH :: UserReq -> App LocPath
 registerH (UserReq userName password) = do
