@@ -11,37 +11,50 @@ import Data.Vector (Vector)
 import Lib.Types
 
 -- POST /users/
-type RegisterAPI = "users" :> ReqBody '[JSON] UserReq :> PostCreated '[JSON] LocPath
+type RegisterAPI = "users" :>
+    Summary "Register a new user" :> Description "Creates a new user and returns its URL"
+        :> ReqBody '[JSON] UserReq :> PostCreated '[JSON] LocPath
 
 type UsersAPI = "users" :> (
     -- GET /users/
-    Get '[JSON] (Vector LocPath) :<|>
+    Summary "Get list of users" :> Description "Returns a list of URLs to users"
+        :> Get '[JSON] (Vector LocPath) :<|>
     -- GET /users/3/
-    Capture "user_id" UserID :> Get '[JSON] User :<|>
+    Summary "Get a user" :> Description "Returns the details of a specific user"
+        :> Capture "user_id" UserID :> Get '[JSON] User :<|>
     -- GET /users/3/phrases?open
-    Capture "user_id" UserID :> "phrases" :> QueryFlag "open" :> Get '[JSON] (Vector LocPath)
+    Summary "Get user's phrases" :> Description "Returns a list of URLs to phrases created by a specific user"
+        :> Capture "user_id" UserID :> "phrases" :> QueryFlag "open" :> Get '[JSON] (Vector LocPath)
     )
 
 type PhraseAPI = "phrases" :> (
     -- GET /phrases?open
-    QueryFlag "open" :> Get '[JSON] (Vector LocPath) :<|>
+    Summary "Get list of phrases" :> Description "Returns a list of URLs to phrases"
+        :> QueryFlag "open" :> Get '[JSON] (Vector LocPath) :<|>
     -- POST /phrases
-    ReqBody '[JSON] PhraseReq :> PostCreated '[JSON] LocPath :<|>
+    Summary "Create a new phrase" :> Description "Creates a new phrase and returns its URL"
+        :> ReqBody '[JSON] PhraseReq :> PostCreated '[JSON] LocPath :<|>
     -- GET /phrases/24
-    Capture "phrase_id" PhraseID :> Get '[JSON] Phrase :<|>
+    Summary "Get a phrase" :> Description "Returns the details of a specific phrase"
+        :> Capture "phrase_id" PhraseID :> Get '[JSON] Phrase :<|>
     -- GET /phrases/24/alternatives
-    Capture "phrase_id" PhraseID :> "alternatives" :> Get '[JSON] (Vector LocPath) :<|>
+    Summary "Get alternatives for a phrase" :> Description "Returns a list of URLs to alternatives for a specific phrase"
+        :> Capture "phrase_id" PhraseID :> "alternatives" :> Get '[JSON] (Vector LocPath) :<|>
     -- POST /phrases/24/alternatives
-    Capture "phrase_id" PhraseID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> PostCreated '[JSON] LocPath
+    Summary "Create an alternative for a phrase" :> Description "Creates a new alternative for a specific phrase and returns its URL"
+        :> Capture "phrase_id" PhraseID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> PostCreated '[JSON] LocPath
     )
 
 type AlternativeAPI = "alternatives" :> (
     -- GET /alternatives/301?author_id=3
-    QueryParam "author_id" UserID :> Get '[JSON] (Vector LocPath) :<|>
+    Summary "Get list of alternatives by author" :> Description "Returns a list of URLs to alternatives filtered by author ID"
+        :> QueryParam "author_id" UserID :> Get '[JSON] (Vector LocPath) :<|>
     -- GET /alternatives/301
-    Capture "alternativeId" AlternativeID :> Get '[JSON] Alternative :<|>
+    Summary "Get an alternative" :> Description "Returns the details of a specific alternative"
+        :> Capture "alternativeId" AlternativeID :> Get '[JSON] Alternative :<|>
     -- PUT /alternatives/301/choose
-    Capture "alternativeId" AlternativeID :> "choose" :> Patch '[JSON] LocPath
+    Summary "Choose an alternative" :> Description "Marks a specific alternative as chosen and returns the URL to the phrase"
+        :> Capture "alternativeId" AlternativeID :> "choose" :> Patch '[JSON] LocPath
     )
 
 type PublicAPI = RegisterAPI

@@ -17,9 +17,6 @@ import Lib.Core.Password
 import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
-import Data.Swagger
-import Servant.Swagger (toSwagger)
-import Servant.Swagger.UI
 
 server :: ServerT API App
 server = publicServer :<|> protectedServer
