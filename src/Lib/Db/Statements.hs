@@ -98,13 +98,13 @@ phraseGetSt :: Statement PhraseID (Maybe Phrase)
 phraseGetSt = Statement sql encoder decoder True
   where
     sql = 
-      "SELECT id :: int4, author_id :: int4, text :: text, created_at :: timestamptz, \
-      \is_open :: bool, chosen_alt_id :: int4?, \
+      "SELECT phrases.id :: int4, author_id :: int4, text :: text, created_at :: timestamptz, \
+      \is_open :: bool, chosen_alt_id, \
       \(SELECT COUNT(*) FROM alternatives WHERE phrase_id = $1 :: int4) :: int4, \
-      \ spellcheck.data :: json \
+      \spellcheck.data :: json \
       \FROM phrases \
       \JOIN spellcheck ON spellcheck.id = phrases.spellcheck_id \
-      \WHERE id = $1 :: int4"
+      \WHERE phrases.id = $1 :: int4"
     encoder = contramap unPhraseId (E.param (E.nonNullable E.int4))
     decoder = D.rowMaybe $ Phrase
       <$> (PhraseID <$> D.column (D.nonNullable D.int4))
@@ -114,7 +114,7 @@ phraseGetSt = Statement sql encoder decoder True
       <*> D.column (D.nonNullable D.bool)
       <*> (fmap AlternativeID <$> D.column (D.nullable D.int4))
        <*> D.column (D.nonNullable D.int4)
-      -- <*> (SpellCheck <$> D.column (D.nonNullable D.json))
+      <*> (SpellCheck <$> D.column (D.nonNullable D.json))
 
 phraseListSt :: Statement (Bool, Maybe UserID) (Vector PhraseID)
 phraseListSt = Statement sql encoder decoder True
@@ -156,11 +156,11 @@ alternativeGetSt :: Statement AlternativeID (Maybe Alternative)
 alternativeGetSt = Statement sql encoder decoder True
   where
     sql = 
-      "SELECT id :: int4, author_id :: int4, phrase_id :: int4, text :: text, created_at :: timestamptz, \
+      "SELECT alternatives.id :: int4, author_id :: int4, phrase_id :: int4, text :: text, created_at :: timestamptz, \
       \spellcheck.data :: json \
       \FROM alternatives \
       \JOIN spellcheck ON spellcheck.id = alternatives.spellcheck_id \
-      \WHERE id = $1 :: int4"
+      \WHERE alternatives.id = $1 :: int4"
     encoder = contramap unAlternativeId (E.param (E.nonNullable E.int4))
     decoder = D.rowMaybe $ Alternative
       <$> (AlternativeID <$> D.column (D.nonNullable D.int4))
@@ -168,7 +168,7 @@ alternativeGetSt = Statement sql encoder decoder True
       <*> (PhraseID <$> D.column (D.nonNullable D.int4))
       <*> D.column (D.nonNullable D.text)
       <*> D.column (D.nonNullable D.timestamptz)
-      -- <*> (SpellCheck <$> D.column (D.nonNullable D.json))
+      <*> (SpellCheck <$> D.column (D.nonNullable D.json))
 
 alternativeListByPhraseSt :: Statement PhraseID (Vector AlternativeID)
 alternativeListByPhraseSt = Statement sql encoder decoder True

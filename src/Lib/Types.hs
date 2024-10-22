@@ -5,11 +5,11 @@ module Lib.Types where
 import Data.Text (Text)
 import Data.Int (Int32)
 import Data.Time (UTCTime)
-import Data.Aeson (Value, Object, FromJSON, ToJSON)
+import Data.Aeson (Value, FromJSON, ToJSON)
 import qualified Data.Aeson.TH as TH (defaultOptions, deriveJSON, omitNothingFields, fieldLabelModifier)
 import Data.ByteString (ByteString)
 import Data.Text.Encoding (decodeUtf8)
-import Data.Swagger (ToParamSchema, NamedSchema (..), SwaggerType (..), HasType (type_), HasExample (..))
+import Data.Swagger (ToParamSchema, NamedSchema (..), SwaggerType (..), HasType (type_), AdditionalProperties (..))
 import Data.Swagger.Schema
 import Data.Typeable (Typeable)
 import Control.Lens ((?~), (&))
@@ -19,6 +19,7 @@ import Servant.Auth.Server (ToJWT, FromJWT)
 import GHC.Generics (Generic)
 
 import Lib.Core.Utils (modifyLabel)
+import Data.Swagger.Lens (HasAdditionalProperties(..), HasExample (example))
 
 newtype UserName = UserName { unUserName :: Text }
     deriving (Generic)
@@ -51,7 +52,12 @@ newtype SpellCheckID = SpellCheckID { unSpellCheckId :: Int32 }
 newtype SpellCheck = SpellCheck { unSpellCheck :: Value }
     deriving (Generic)
     deriving newtype (Show, FromJSON, ToJSON)
-    -- deriving anyclass (ToSchema)
+
+instance ToSchema SpellCheck where
+    declareNamedSchema _ = return $ NamedSchema (Just "SpellCheck") $ mempty
+      & type_ ?~ SwaggerObject
+      & additionalProperties ?~ AdditionalPropertiesAllowed True
+      & example ?~ "[{\"token\": \"word\", \"suggestions\": [\"word1\", \"word2\"]}]"
 
 -- location path, e.g. "/api/users/3"
 newtype LocPath = LocPath String
@@ -86,7 +92,7 @@ data Alternative = Alternative
     , altPhraseId    :: PhraseID
     , altText        :: Text
     , altCreatedAt   :: UTCTime
-    -- , altSpellCheck  :: SpellCheck
+    , altSpellCheck  :: SpellCheck
     }
     deriving (Show, Generic)
 
@@ -104,7 +110,7 @@ data Phrase = Phrase
     , phraseIsOpen        :: Bool
     , phraseChosenAltId   :: Maybe AlternativeID
     , phraseNumAlts       :: Int32
-    -- , phraseSpellCheck    :: SpellCheck
+    , phraseSpellCheck    :: SpellCheck
     }
     deriving (Show, Generic)
 
@@ -125,7 +131,7 @@ $(TH.deriveJSON TH.defaultOptions { TH.fieldLabelModifier = modifyLabel "userReq
 instance ToSchema UserReq where
     declareNamedSchema = genericDeclareNamedSchemaUnrestricted
         defaultSchemaOptions { fieldLabelModifier = modifyLabel "userReq" }
-  
+
 data PhraseReq = PhraseReq
     { phraseReqText :: Text
     }

@@ -11,7 +11,7 @@ import qualified Hasql.Pool as Pool
 import System.IO (stdout, stderr, hPutStrLn)
 import Network.Wai.Handler.Warp (setPort, setBeforeMainLoop, defaultSettings, runSettings)
 import Network.Wai.Middleware.RequestLogger
-import Network.Wai.Middleware.Cors (simpleCors)
+import Network.Wai.Middleware.Cors (simpleCors, CorsResourcePolicy (..), cors)
 import Network.Wai (Middleware)
 import Servant.Auth.Server (generateKey)
 
@@ -21,6 +21,7 @@ import Lib.Server
 import Lib.Db
 import Lib.Core.Speller
 import Lib.Swagger
+import Network.Wai.Middleware.AddHeaders (addHeaders)
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
@@ -65,7 +66,23 @@ runServer = do
             setPort (appPort config) $
             setBeforeMainLoop (hPutStrLn stderr ("Starting server on port " ++ show (appPort config)))
             defaultSettings
-    runSettings warpSettings $ simpleCors $ loggers $ application env
+    runSettings warpSettings $ loggers . allowCsrf . corsified $ application env
+    where
+        --  CORS required by Swagger UI
+        allowCsrf :: Middleware
+        allowCsrf = addHeaders [("Access-Control-Allow-Headers", "x-csrf-token,authorization")]
+        --  CORS required by Swagger UI
+        corsified :: Middleware
+        corsified = cors (const $ Just CorsResourcePolicy {
+              corsOrigins        = Nothing
+            , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
+            , corsRequestHeaders = ["Authorization", "Content-Type"]
+            , corsExposedHeaders = Nothing
+            , corsMaxAge         = Nothing
+            , corsVaryOrigin     = False
+            , corsRequireOrigin  = False
+            , corsIgnoreFailures = False
+            })
 
 initDb :: IO ()
 initDb = do
