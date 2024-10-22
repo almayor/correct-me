@@ -41,6 +41,7 @@ library
       Lib.Docs
       Lib.Server
       Lib.Server.Auth
+      Lib.Server.Handlers
       Lib.Server.ThrowAll
       Lib.Swagger
       Lib.Types
@@ -69,6 +70,7 @@ library
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , http-types
     , jose
     , lens
     , lens-aeson
@@ -79,65 +81,7 @@ library
     , profunctors
     , servant
     , servant-auth
-    , servant-auth-server
-    , servant-auth-swagger
-    , servant-client
-    , servant-docs
-    , servant-server
-    , servant-swagger
-    , servant-swagger-ui
-    , swagger2
-    , text
-    , time
-    , tomland
-    , transformers
-    , tuple
-    , utf8-string
-    , vector
-    , wai
-    , wai-cors
-    , wai-extra
-    , wai-logger
-    , warp >=3.2.4
-    , wreq
-  default-language: Haskell2010
-
-executable correct-me-docs
-  main-is: Main.hs
-  other-modules:
-      Paths_correct_me
-  autogen-modules:
-      Paths_correct_me
-  hs-source-dirs:
-      app/docs
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      aeson
-    , async
-    , base >=4.7 && <5
-    , bcrypt
-    , bytestring
-    , casing
-    , contravariant-extras
-    , correct-me
-    , deriving-aeson
-    , either
-    , fast-logger
-    , hasql
-    , hasql-migration
-    , hasql-pool
-    , hasql-th
-    , hasql-transaction
-    , jose
-    , lens
-    , lens-aeson
-    , monad-logger
-    , mtl
-    , network-uri
-    , optics
-    , profunctors
-    , servant
-    , servant-auth
+    , servant-auth-docs
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
@@ -168,7 +112,7 @@ executable correct-me-exe
   autogen-modules:
       Paths_correct_me
   hs-source-dirs:
-      app/main
+      exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -187,6 +131,7 @@ executable correct-me-exe
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , http-types
     , jose
     , lens
     , lens-aeson
@@ -197,6 +142,7 @@ executable correct-me-exe
     , profunctors
     , servant
     , servant-auth
+    , servant-auth-docs
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
@@ -247,6 +193,7 @@ test-suite correct-me-test
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , http-types
     , jose
     , lens
     , lens-aeson
@@ -257,6 +204,7 @@ test-suite correct-me-test
     , profunctors
     , servant
     , servant-auth
+    , servant-auth-docs
     , servant-auth-server
     , servant-auth-swagger
     , servant-client

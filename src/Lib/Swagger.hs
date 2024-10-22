@@ -1,5 +1,6 @@
 module Lib.Swagger (
-    applicationSwagger
+    swaggerServer,
+    SwaggerAPI,
     ) where
 
 import Data.Swagger
@@ -22,8 +23,5 @@ swaggerDoc config = toSwagger (Proxy @AppAPI)
 
 type SwaggerAPI = SwaggerSchemaUI "swagger-ui" "swagger.json"
 
-serverSwagger :: AppConfig -> Server SwaggerAPI
-serverSwagger = swaggerSchemaUIServer . swaggerDoc
-
-applicationSwagger :: AppConfig -> Application
-applicationSwagger = serve (Proxy @SwaggerAPI) . serverSwagger
+swaggerServer :: AppConfig -> Server SwaggerAPI
+swaggerServer = swaggerSchemaUIServer . swaggerDoc

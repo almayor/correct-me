@@ -1,8 +1,6 @@
 module Lib
     ( runServer
     , initDb
-    , runSwagger
-    , writeDocs
     ) where
 
 import Control.Monad.Logger
@@ -49,6 +47,7 @@ mkEnv config = do
         , envLogLevel = LevelDebug
         , envSpellerAction = spellerAction
         , envJWTKey = jwtKey
+        , envConfig = config
         }
 
 mkLoggers :: AppConfig -> IO Middleware
@@ -58,6 +57,21 @@ mkLoggers _ =
           destination = Handle stdout            -- Log to stdout 
         }
     in mkRequestLogger stdoutLoggerSettings
+
+allowCsrf :: Middleware
+allowCsrf = addHeaders [("Access-Control-Allow-Headers", "x-csrf-token,authorization")]
+
+corsified :: Middleware
+corsified = cors (const $ Just CorsResourcePolicy {
+        corsOrigins        = Nothing
+    , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
+    , corsRequestHeaders = ["Authorization", "Content-Type"]
+    , corsExposedHeaders = Nothing
+    , corsMaxAge         = Nothing
+    , corsVaryOrigin     = False
+    , corsRequireOrigin  = False
+    , corsIgnoreFailures = False
+    })
 
 runServer :: IO ()
 runServer = do
@@ -69,22 +83,6 @@ runServer = do
             setBeforeMainLoop (hPutStrLn stderr ("Starting server on port " ++ show (appPort config)))
             defaultSettings
     runSettings warpSettings $ loggers . allowCsrf . corsified $ application env
-    where
-        --  CORS required by Swagger UI
-        allowCsrf :: Middleware
-        allowCsrf = addHeaders [("Access-Control-Allow-Headers", "x-csrf-token,authorization")]
-        --  CORS required by Swagger UI
-        corsified :: Middleware
-        corsified = cors (const $ Just CorsResourcePolicy {
-              corsOrigins        = Nothing
-            , corsMethods        = ["OPTIONS", "GET", "PUT", "POST"]
-            , corsRequestHeaders = ["Authorization", "Content-Type"]
-            , corsExposedHeaders = Nothing
-            , corsMaxAge         = Nothing
-            , corsVaryOrigin     = False
-            , corsRequireOrigin  = False
-            , corsIgnoreFailures = False
-            })
 
 initDb :: IO ()
 initDb = do
@@ -92,16 +90,3 @@ initDb = do
     env <- mkEnv config
     putStrLn "Initialising and seeding database"
     runAppAsIO env prepareSeededDb
-
-runSwagger :: IO ()
-runSwagger = do
-    config <- loadConfig
-    let warpSettings =
-            setPort (swaggerPort config) $
-            setBeforeMainLoop (hPutStrLn stderr ("Starting swagger on port " ++ show (swaggerPort config)))
-            defaultSettings
-    runSettings warpSettings $ applicationSwagger config
-
--- Write the documentation to a file
-writeDocs :: IO ()
-writeDocs = undefined

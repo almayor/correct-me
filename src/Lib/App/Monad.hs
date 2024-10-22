@@ -24,6 +24,7 @@ import Crypto.JOSE.JWK (JWK)
 
 import Lib.Types
 import Lib.App.Error
+import Lib.Config (AppConfig)
 
 type LogAction = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
 type SpellerAction = Text -> AppM SpellCheck
@@ -34,6 +35,7 @@ data Env = Env
     , envLogLevel       :: !LogLevel
     , envSpellerAction  :: SpellerAction
     , envJWTKey         :: !JWK
+    , envConfig         :: !AppConfig
     }
 
 newtype AppM a = AppM
