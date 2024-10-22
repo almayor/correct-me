@@ -2,6 +2,7 @@ module Lib
     ( runServer
     , initDb
     , runSwagger
+    , writeDocs
     ) where
 
 import Control.Monad.Logger
@@ -12,6 +13,7 @@ import System.IO (stdout, stderr, hPutStrLn)
 import Network.Wai.Handler.Warp (setPort, setBeforeMainLoop, defaultSettings, runSettings)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Cors (simpleCors, CorsResourcePolicy (..), cors)
+import Network.Wai.Middleware.AddHeaders (addHeaders)
 import Network.Wai (Middleware)
 import Servant.Auth.Server (generateKey)
 
@@ -19,9 +21,9 @@ import Lib.App
 import Lib.Config
 import Lib.Server
 import Lib.Db
+import Lib.Docs
 import Lib.Core.Speller
 import Lib.Swagger
-import Network.Wai.Middleware.AddHeaders (addHeaders)
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
@@ -99,3 +101,7 @@ runSwagger = do
             setBeforeMainLoop (hPutStrLn stderr ("Starting swagger on port " ++ show (swaggerPort config)))
             defaultSettings
     runSettings warpSettings $ applicationSwagger config
+
+-- Write the documentation to a file
+writeDocs :: IO ()
+writeDocs = undefined

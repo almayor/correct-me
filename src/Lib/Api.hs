@@ -59,7 +59,7 @@ type AlternativeAPI = "alternatives" :> (
 
 type PublicAPI = RegisterAPI
 type ProtectedAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
-type API = "api" :> (PublicAPI :<|> Auth '[BasicAuth, JWT] User :> ProtectedAPI) 
+type AppAPI = "api" :> (PublicAPI :<|> Auth '[BasicAuth, JWT] User :> ProtectedAPI) 
 
 userId2Loc :: UserID -> LocPath
 userId2Loc = LocPath . ("/api/users/" ++) . show

@@ -38,6 +38,7 @@ library
       Lib.Db.Functions
       Lib.Db.Schema
       Lib.Db.Statements
+      Lib.Docs
       Lib.Server
       Lib.Server.Auth
       Lib.Server.ThrowAll
@@ -81,6 +82,7 @@ library
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
+    , servant-docs
     , servant-server
     , servant-swagger
     , servant-swagger-ui
@@ -100,14 +102,14 @@ library
     , wreq
   default-language: Haskell2010
 
-executable correct-me-exe
+executable correct-me-docs
   main-is: Main.hs
   other-modules:
       Paths_correct_me
   autogen-modules:
       Paths_correct_me
   hs-source-dirs:
-      app
+      app/docs
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -139,6 +141,66 @@ executable correct-me-exe
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
+    , servant-docs
+    , servant-server
+    , servant-swagger
+    , servant-swagger-ui
+    , swagger2
+    , text
+    , time
+    , tomland
+    , transformers
+    , tuple
+    , utf8-string
+    , vector
+    , wai
+    , wai-cors
+    , wai-extra
+    , wai-logger
+    , warp >=3.2.4
+    , wreq
+  default-language: Haskell2010
+
+executable correct-me-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_correct_me
+  autogen-modules:
+      Paths_correct_me
+  hs-source-dirs:
+      app/main
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , async
+    , base >=4.7 && <5
+    , bcrypt
+    , bytestring
+    , casing
+    , contravariant-extras
+    , correct-me
+    , deriving-aeson
+    , either
+    , fast-logger
+    , hasql
+    , hasql-migration
+    , hasql-pool
+    , hasql-th
+    , hasql-transaction
+    , jose
+    , lens
+    , lens-aeson
+    , monad-logger
+    , mtl
+    , network-uri
+    , optics
+    , profunctors
+    , servant
+    , servant-auth
+    , servant-auth-server
+    , servant-auth-swagger
+    , servant-client
+    , servant-docs
     , servant-server
     , servant-swagger
     , servant-swagger-ui
@@ -198,6 +260,7 @@ test-suite correct-me-test
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
+    , servant-docs
     , servant-server
     , servant-swagger
     , servant-swagger-ui

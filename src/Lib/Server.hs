@@ -18,7 +18,7 @@ import Lib.Api
 import Lib.Server.Auth (authenticate)
 import Lib.Db
 
-server :: ServerT API App
+server :: ServerT AppAPI App
 server = publicServer :<|> protectedServer
 
 publicServer :: ServerT PublicAPI App
@@ -125,8 +125,8 @@ application env =
         authCfg = authenticate env
         ctx = jwtCfg :. defaultCookieSettings :. authCfg :. EmptyContext
         hoistedServer = hoistServerWithContext
-            (Proxy @API)
+            (Proxy @AppAPI)
             (Proxy @'[BasicAuthCfg, CookieSettings, JWTSettings])
             (runAppAsHandler env)
             server
-    in serveWithContext (Proxy @API) ctx hoistedServer
+    in serveWithContext (Proxy @AppAPI) ctx hoistedServer

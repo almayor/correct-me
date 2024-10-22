@@ -14,7 +14,7 @@ import Lib.Api
 import Lib.Config
 
 swaggerDoc :: AppConfig -> Swagger
-swaggerDoc config = toSwagger (Proxy @API)
+swaggerDoc config = toSwagger (Proxy @AppAPI)
     & info.title        .~ appName config
     & info.version      .~ appVersion config
     & info.description  ?~ appDescription config

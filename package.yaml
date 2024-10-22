@@ -48,6 +48,7 @@ dependencies:
   - servant-auth-server
   - servant-auth-swagger
   - servant-client
+  - servant-docs
   - servant-server
   - servant-swagger
   - servant-swagger-ui
@@ -98,9 +99,18 @@ library:
                     , TypeOperators
 
 executables:
+  correct-me-docs:
+    main:                Main.hs
+    source-dirs:         app/docs
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - correct-me
   correct-me-exe:
     main:                Main.hs
-    source-dirs:         app
+    source-dirs:         app/main
     ghc-options:
     - -threaded
     - -rtsopts
