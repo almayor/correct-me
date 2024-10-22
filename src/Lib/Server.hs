@@ -5,10 +5,12 @@ module Lib.Server
 
 import Data.Vector (Vector)
 import Control.Monad (when)
-import Servant
+import Servant hiding (BasicAuth)
+import Servant.Auth.Server hiding (throwAll)
 
 import Lib.App.Monad
 import Lib.App.Error
+import Lib.Server.ThrowAll
 import Lib.Core.Types
 import Lib.Core.Password
 import Lib.Api
@@ -16,24 +18,29 @@ import Lib.Server.Auth (authenticate)
 import Lib.Db
 
 server :: ServerT API App
-server = publicH :<|> protectedH
+server = publicServer :<|> protectedServer
+
+publicServer :: ServerT PublicAPI App
+publicServer = registerH
+
+protectedServer :: AuthResult User -> ServerT ProtectedAPI App
+protectedServer (Authenticated u) = userH :<|> phraseH :<|> alternativeH
     where
-    userH u =
+    userH =
             listUsersH u
         :<|> getUserH u
         :<|> listPhrasesByUserH u
-    phraseH u =
+    phraseH =
             listPhrasesH u
         :<|> insertPhraseH u
         :<|> getPhraseH u
         :<|> listAlternativesByPhraseH u
         :<|> insertAlternativeH u
-    alternativeH u =
+    alternativeH =
             listAlternatives u
         :<|> getAlternativeH u
         :<|> setAlternativeH u
-    publicH = registerH
-    protectedH u = userH u :<|> phraseH u :<|> alternativeH u
+protectedServer _ = throwAll NotAuthenticatedError
 
 registerH :: UserReq -> App LocPath
 registerH (UserReq userName password) = do
@@ -105,12 +112,21 @@ setAlternativeH (User { userId }) altId = do
     execute phraseSetChosenAltSt (altPhraseId alt, altId)
     return $ phraseId2Loc (altPhraseId alt)
 
+
+type instance BasicAuthCfg = BasicAuthData -> IO (AuthResult User)
+
+instance FromBasicAuthData User where
+  fromBasicAuthData authData authCheckFunction = authCheckFunction authData
+
 application :: Env -> Application
 application env = 
-    let ctx = BasicAuthCheck (authenticate env) :. EmptyContext
+    let jwtCfg = defaultJWTSettings (envJWTKey env)
+        authCfg = authenticate env
+        ctx = jwtCfg :. defaultCookieSettings :. authCfg :. EmptyContext
+        test = Proxy :: Proxy '[BasicAuthCfg, CookieSettings, JWTSettings]
         hoistedServer = hoistServerWithContext
             (Proxy @API)
-            (Proxy @'[BasicAuthCheck User])
+            test
             (runAppAsHandler env)
             server
     in serveWithContext (Proxy @API) ctx hoistedServer

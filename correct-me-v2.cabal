@@ -41,6 +41,8 @@ library
       Lib.Db.Statements
       Lib.Server
       Lib.Server.Auth
+      Lib.Server.ThrowAll
+      Lib.Swagger
   other-modules:
       Paths_correct_me_v2
   autogen-modules:
@@ -48,7 +50,7 @@ library
   hs-source-dirs:
       src
   default-extensions:
-      DerivingStrategies , GeneralizedNewtypeDeriving , OverloadedStrings , NamedFieldPuns , TemplateHaskell , DeriveAnyClass , MultiParamTypeClasses , InstanceSigs , DataKinds , TypeOperators , DeriveGeneric , ConstraintKinds , FlexibleContexts , TypeApplications , RecordWildCards , ScopedTypeVariables
+      ConstraintKinds , DataKinds , DeriveAnyClass , DeriveGeneric , DerivingStrategies , FlexibleContexts , GeneralizedNewtypeDeriving , InstanceSigs , MultiParamTypeClasses , NamedFieldPuns , OverloadedStrings , RecordWildCards , ScopedTypeVariables , TemplateHaskell , TypeApplications , TypeFamilies , TypeOperators
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
@@ -64,6 +66,7 @@ library
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , jose
     , lens
     , lens-aeson
     , monad-logger
@@ -71,7 +74,13 @@ library
     , network-uri
     , profunctors
     , servant
+    , servant-auth
+    , servant-auth-server
+    , servant-auth-swagger
+    , servant-client
     , servant-server
+    , servant-swagger
+    , swagger2
     , text
     , time
     , tomland
@@ -110,6 +119,7 @@ executable correct-me-v2-exe
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , jose
     , lens
     , lens-aeson
     , monad-logger
@@ -117,7 +127,13 @@ executable correct-me-v2-exe
     , network-uri
     , profunctors
     , servant
+    , servant-auth
+    , servant-auth-server
+    , servant-auth-swagger
+    , servant-client
     , servant-server
+    , servant-swagger
+    , swagger2
     , text
     , time
     , tomland
@@ -157,6 +173,7 @@ test-suite correct-me-v2-test
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , jose
     , lens
     , lens-aeson
     , monad-logger
@@ -164,7 +181,13 @@ test-suite correct-me-v2-test
     , network-uri
     , profunctors
     , servant
+    , servant-auth
+    , servant-auth-server
+    , servant-auth-swagger
+    , servant-client
     , servant-server
+    , servant-swagger
+    , swagger2
     , text
     , time
     , tomland

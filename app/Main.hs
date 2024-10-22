@@ -4,5 +4,6 @@ import Lib
 
 main :: IO ()
 main = do
+    showSwagger
     initDb
     runServer

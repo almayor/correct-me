@@ -20,6 +20,7 @@ import Data.Bifunctor (first)
 
 import Hasql.Pool (Pool)
 import Servant (Handler)
+import Crypto.JOSE.JWK (JWK)
 
 import Lib.Core.Types
 import Lib.App.Error
@@ -29,9 +30,10 @@ type SpellerAction = Text -> App SpellCheck
 
 data Env = Env
     { envDbPool         :: !Pool
-    , envLogAction      :: LogAction
-    , envLogLevel       :: LogLevel
+    , envLogAction      :: !LogAction
+    , envLogLevel       :: !LogLevel
     , envSpellerAction  :: SpellerAction
+    , envJWTKey         :: !JWK
     }
 
 newtype App a = App

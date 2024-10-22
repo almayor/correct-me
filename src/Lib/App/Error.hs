@@ -21,6 +21,7 @@ data AppError =
     | PhraseAlreadyClosedError
     | InconsistentDataError
     | ExternalServiceError String
+    | NotAuthenticatedError
     | DbError UsageError
     | InternalError String
     deriving (Show)
@@ -33,6 +34,7 @@ toHttpError NotTheAuthorError = err403 { errBody = "Only author can do that" }
 toHttpError PhraseAlreadyClosedError = err409 { errBody = "Phrase is already closed" }
 toHttpError InconsistentDataError = err500 { errBody = "Inconsistent data" }
 toHttpError (DbError e) = err500 { errBody = fromString $ show e }
+toHttpError NotAuthenticatedError = err403 { errBody = "Not authenticated" }
 toHttpError (ExternalServiceError e) = err500 { errBody = fromString e }
 toHttpError (InternalError e) = err500 { errBody = fromString e }
 

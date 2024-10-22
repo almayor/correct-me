@@ -4,7 +4,9 @@
 
 module Lib.Api where
 
-import Servant
+import Servant hiding (BasicAuth)
+import Servant.Auth.Server hiding (Auth, BasicAuth, JWT)
+import Servant.Auth.Swagger 
 import Data.Vector (Vector)
 
 import Lib.Core.Types
@@ -45,7 +47,7 @@ type AlternativeAPI = "alternatives" :> (
 
 type PublicAPI = RegisterAPI
 type ProtectedAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
-type API = "api" :> (PublicAPI :<|> BasicAuth "basic-auth" User :> ProtectedAPI) 
+type API = "api" :> (PublicAPI :<|> Auth '[BasicAuth] User :> ProtectedAPI) 
 
 userId2Loc :: UserID -> LocPath
 userId2Loc = LocPath . ("/api/users/" ++) . show

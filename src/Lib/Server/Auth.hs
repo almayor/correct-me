@@ -1,6 +1,6 @@
 module Lib.Server.Auth (authenticate) where
 
-import Servant
+import Servant.Auth.Server
 
 import Lib.Db
 import Lib.App.Monad
@@ -8,7 +8,7 @@ import Lib.Core.Password
 import Lib.Core.Types
 import Lib.Core.Username
 
-authenticate' :: BasicAuthData -> App (BasicAuthResult User)
+authenticate' :: BasicAuthData -> App (AuthResult User)
 authenticate' (BasicAuthData userNameBS passwordBS) = do
     let userName = bs2UserName userNameBS
     let password = bs2Password passwordBS
@@ -18,10 +18,9 @@ authenticate' (BasicAuthData userNameBS passwordBS) = do
         Just user -> do
             hash <- execute userGetPasswordSt (userId user)
             if verifyPassword password hash
-                then return $ Authorized user
+                then return $ Authenticated user
                 else return BadPassword
 
-authenticate :: Env -> BasicAuthData -> IO (BasicAuthResult User)
+authenticate :: Env -> BasicAuthData -> IO (AuthResult User)
 authenticate env d = runAppAsIO env (authenticate' d)
-
 

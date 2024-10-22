@@ -19,7 +19,7 @@ import Lib.Core.Types (SpellCheck(..))
 
 -- | Spellcheck the given text using Yandex Speller API.
 externalSpeller :: (MonadIO m, CanFail m) => URI -> Text -> m SpellCheck
-yandexSpeller uri text = do
+externalSpeller uri text = do
     let postData = "text" := text
     $logInfo $ "Requesting spellcheck from " <> (pack . show) uri  <> " with data: " <> (pack . show) postData
     response <- liftIO . try @IOException $ postWith (defaults & header "Content-Type" .~ ["application/x-www-form-urlencoded"]) (show uri) postData

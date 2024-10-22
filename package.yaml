@@ -20,40 +20,46 @@ extra-source-files:
 description:         Please see the README on GitHub at <https://github.com/almayor/correct-me-v2#readme>
 
 dependencies:
-  - base >= 4.7 && < 5
-  - tuple
-  - servant
-  - servant-server
   - aeson
+  - base >= 4.7 && < 5
+  - bcrypt
+  - bytestring
+  - contravariant-extras
   - deriving-aeson
-  - transformers
-  - warp >= 3.2.4
-  - wai-logger
-  - wai
-  - wai-extra
+  - either
   - fast-logger
   - hasql
-  - hasql-th
-  - hasql-transaction
   - hasql-migration
   - hasql-pool
-  - text
-  - time
-  - contravariant-extras
-  - vector
-  - profunctors
-  - tuple
-  - bytestring
-  - mtl
-  - monad-logger
-  - tomland
-  - either
-  - bcrypt
-  - utf8-string
-  - wreq
+  - hasql-th
+  - hasql-transaction
+  - jose
   - lens
   - lens-aeson
+  - monad-logger
+  - mtl
   - network-uri
+  - profunctors
+  - servant
+  - servant-auth
+  - servant-auth-server
+  - servant-auth-swagger
+  - servant-client
+  - servant-server
+  - servant-swagger
+  - swagger2
+  - text
+  - time
+  - tomland
+  - transformers
+  - tuple
+  - utf8-string
+  - vector
+  - wai
+  - wai-extra
+  - wai-logger
+  - warp >= 3.2.4
+  - wreq
 
 ghc-options:
 - -Wall
@@ -68,22 +74,23 @@ ghc-options:
 
 library:
   source-dirs: src
-  default-extensions: DerivingStrategies
-                    , GeneralizedNewtypeDeriving
-                    , OverloadedStrings
-                    , NamedFieldPuns
-                    , TemplateHaskell
-                    , DeriveAnyClass
-                    , MultiParamTypeClasses
-                    , InstanceSigs
+  default-extensions: ConstraintKinds
                     , DataKinds
-                    , TypeOperators
+                    , DeriveAnyClass
                     , DeriveGeneric
-                    , ConstraintKinds
+                    , DerivingStrategies
                     , FlexibleContexts
-                    , TypeApplications
+                    , GeneralizedNewtypeDeriving
+                    , InstanceSigs
+                    , MultiParamTypeClasses
+                    , NamedFieldPuns
+                    , OverloadedStrings
                     , RecordWildCards
                     , ScopedTypeVariables
+                    , TemplateHaskell
+                    , TypeApplications
+                    , TypeFamilies
+                    , TypeOperators
 
 executables:
   correct-me-v2-exe:

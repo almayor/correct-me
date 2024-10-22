@@ -114,7 +114,7 @@ phraseGetSt = Statement sql encoder decoder True
       <*> D.column (D.nonNullable D.bool)
       <*> (fmap AlternativeID <$> D.column (D.nullable D.int4))
        <*> D.column (D.nonNullable D.int4)
-      <*> (SpellCheck <$> D.column (D.nonNullable D.json))
+      -- <*> (SpellCheck <$> D.column (D.nonNullable D.json))
 
 phraseListSt :: Statement (Bool, Maybe UserID) (Vector PhraseID)
 phraseListSt = Statement sql encoder decoder True
@@ -168,7 +168,7 @@ alternativeGetSt = Statement sql encoder decoder True
       <*> (PhraseID <$> D.column (D.nonNullable D.int4))
       <*> D.column (D.nonNullable D.text)
       <*> D.column (D.nonNullable D.timestamptz)
-      <*> (SpellCheck <$> D.column (D.nonNullable D.json))
+      -- <*> (SpellCheck <$> D.column (D.nonNullable D.json))
 
 alternativeListByPhraseSt :: Statement PhraseID (Vector AlternativeID)
 alternativeListByPhraseSt = Statement sql encoder decoder True

@@ -1,6 +1,7 @@
 module Lib
     ( runServer
     , initDb
+    , showSwagger
     ) where
 
 import Control.Monad.Logger
@@ -11,12 +12,14 @@ import System.IO (stdout)
 import Network.Wai.Handler.Warp (run)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai (Middleware)
+import Servant.Auth.Server (generateKey)
 
 import Lib.App
 import Lib.Config
 import Lib.Server
 import Lib.Db
 import Lib.Core.Speller
+import Lib.Swagger
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
@@ -28,18 +31,20 @@ initialisePool AppConfig{..} = do
     Pool.acquire poolSize poolAcquisitionTimeout poolLifeTime poolTimeout conSettings
 
 mkEnv :: AppConfig -> IO Env
-mkEnv config@Config(configSpellerUri, configSpellerEnabled) = do
+mkEnv config = do
     dbPool <- initialisePool config
+    jwtKey <- generateKey
     let logAction = defaultOutput stdout
     let spellerAction = 
-          if configSpellerEnabled
-              then externalSpeller @App configSpellerUri
+          if configSpellerEnabled config
+              then externalSpeller @App (configSpellerUri config)
               else mockSpeller @App
     return Env
         { envDbPool = dbPool
         , envLogAction = logAction
         , envLogLevel = LevelDebug
         , envSpellerAction = spellerAction
+        , envJWTKey = jwtKey
         }
 
 mkLoggers :: AppConfig -> IO Middleware
@@ -57,6 +62,9 @@ runServer = do
     loggers <- mkLoggers config
     putStrLn $ "Starting server on port " ++ show (configAppPort config)
     run (configAppPort config) $ loggers $ application env
+
+showSwagger :: IO ()
+showSwagger = print swaggerDoc
 
 initDb :: IO ()
 initDb = do
