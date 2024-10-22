@@ -124,10 +124,9 @@ application env =
     let jwtCfg = defaultJWTSettings (envJWTKey env)
         authCfg = authenticate env
         ctx = jwtCfg :. defaultCookieSettings :. authCfg :. EmptyContext
-        test = Proxy :: Proxy '[BasicAuthCfg, CookieSettings, JWTSettings]
         hoistedServer = hoistServerWithContext
             (Proxy @API)
-            test
+            (Proxy @'[BasicAuthCfg, CookieSettings, JWTSettings])
             (runAppAsHandler env)
             server
     in serveWithContext (Proxy @API) ctx hoistedServer
