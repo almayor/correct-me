@@ -1,6 +1,6 @@
-name:                correct-me-v2
+name:                correct-me
 version:             0.1.0.0
-github:              "almayor/correct-me-v2"
+github:              "almayor/correct-me"
 license:             BSD-3-Clause
 author:              "Alexander Mayorov"
 maintainer:          "mayorovme@gmail.com"
@@ -17,7 +17,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/almayor/correct-me-v2#readme>
+description:         Please see the README on GitHub at <https://github.com/almayor/correct-me#readme>
 
 dependencies:
   - aeson
@@ -98,7 +98,7 @@ library:
                     , TypeOperators
 
 executables:
-  correct-me-v2-exe:
+  correct-me-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -106,10 +106,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - correct-me-v2
+    - correct-me
 
 tests:
-  correct-me-v2-test:
+  correct-me-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -117,4 +117,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - correct-me-v2
+    - correct-me

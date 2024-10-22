@@ -1,4 +1,4 @@
-# Changelog for `correct-me-v2`
+# Changelog for `correct-me`
 
 All notable changes to this project will be documented in this file.
 

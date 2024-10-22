@@ -57,7 +57,7 @@ instance ToSchema SpellCheck where
     declareNamedSchema _ = return $ NamedSchema (Just "SpellCheck") $ mempty
       & type_ ?~ SwaggerObject
       & additionalProperties ?~ AdditionalPropertiesAllowed True
-      & example ?~ "[{\"token\": \"word\", \"suggestions\": [\"word1\", \"word2\"]}]"
+      & example ?~ "[{json-response-from-speller}]"
 
 -- location path, e.g. "/api/users/3"
 newtype LocPath = LocPath String
