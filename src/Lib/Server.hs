@@ -40,7 +40,7 @@ protectedServer (Authenticated user) = userH user :<|> phraseH user :<|> alterna
     alternativeH u =
             listAlternatives u
         :<|> getAlternativeH u
-        :<|> setAlternativeH u
+        :<|> chooseAlternativeH u
 protectedServer _ = throwAll NotAuthenticatedError
 
 registerH :: UserReq -> App LocPath
@@ -105,14 +105,13 @@ getAlternativeH _ altId = do
     entry <- execute alternativeGetSt altId
     maybe (throwError NotFoundError) return entry
 
-setAlternativeH :: User -> AlternativeID -> App LocPath
-setAlternativeH (User { userId }) altId = do
+chooseAlternativeH :: User -> AlternativeID -> App LocPath
+chooseAlternativeH (User { userId }) altId = do
     alt <- execute alternativeGetSt altId >>= maybe (throwError NotFoundError) return
     phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe (throwError InconsistentDataError) return
     when (phraseAuthorId phrase /= userId) $ throwError NotTheAuthorError
     execute phraseSetChosenAltSt (altPhraseId alt, altId)
     return $ phraseId2Loc (altPhraseId alt)
-
 
 type instance BasicAuthCfg = BasicAuthData -> IO (AuthResult User)
 
