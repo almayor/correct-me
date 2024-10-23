@@ -3,7 +3,8 @@ module Lib.Server.Handlers where
 
 import Data.Vector (Vector)
 import Data.Text (Text, unpack)
-import Control.Monad (when)
+import qualified Data.Text as T
+import Control.Monad (when, unless)
 import Servant hiding (BasicAuth)
 import Text.Regex.TDFA ((=~))
 
@@ -18,19 +19,27 @@ validateUsername :: UserName -> AppM ()
 validateUsername (UserName userName) = do
     let l = length . unpack $ userName
     when (l < 5 || l > 20) $
-        throwError $ InvalidSignUp "Username be between 5 and 20 characters long"
+        throwError $ InvalidContent "Username be between 5 and 20 characters long"
     when (userName =~ ("^[[:space:]]|[[:space:]]$" :: Text) :: Bool) $
-        throwError $ InvalidSignUp "Username must not begin or end with a space"
+        throwError $ InvalidContent "Username must not begin or end with a space"
     when (userName =~ ("[[:space:]]{2,}" :: Text) :: Bool) $
-        throwError $ InvalidSignUp "Username must not contain consecutive spaces"
+        throwError $ InvalidContent "Username must not contain consecutive spaces"
     when (userName =~ ("[^[:alnum:]_]" :: Text) :: Bool) $
-        throwError $ InvalidSignUp "Username must contain only letters, digits, and underscores"
+        throwError $ InvalidContent "Username must contain only letters, digits, and underscores"
 
 validatePassword :: PasswordPlain -> AppM ()
 validatePassword (PasswordPlain password) = do
     let l = length . unpack $ password
     when (l < 8 || l > 25) $
-        throwError $ InvalidSignUp "Password must be between 8 and 25 characters long"
+        throwError $ InvalidContent "Password must be between 8 and 25 characters long"
+
+validatePhrase :: Text -> AppM ()
+validatePhrase phrase = do
+    when (T.null phrase) $ throwError $ InvalidContent "Phrase must not be empty"
+
+validateAlternative :: Text -> AppM ()
+validateAlternative alt = do
+    when (T.null alt) $ throwError $ InvalidContent "Alternative must not be empty"
 
 registerH :: UserReq -> AppM LocPath
 registerH (UserReq userName password) = do
@@ -44,6 +53,7 @@ registerH (UserReq userName password) = do
 
 insertPhraseH :: User -> PhraseReq -> AppM LocPath
 insertPhraseH (User { userId }) (PhraseReq { phraseReqText }) = do
+    validatePhrase phraseReqText
     spellCheck <- runSpeller phraseReqText
     spellCheckId <- execute spellCheckInsertSt spellCheck
     phraseId <- execute phraseInsertSt (userId, phraseReqText, spellCheckId)
@@ -51,6 +61,9 @@ insertPhraseH (User { userId }) (PhraseReq { phraseReqText }) = do
 
 insertAlternativeH :: User -> PhraseID -> AlternativeReq -> AppM LocPath
 insertAlternativeH (User { userId }) phraseId (AlternativeReq { altReqText }) = do
+    phrase <- execute phraseGetSt phraseId >>= maybe (throwError NotFoundError) return
+    unless (phraseIsOpen phrase) $ throwError PhraseAlreadyClosedError
+    validateAlternative altReqText
     spellCheck <- runSpeller altReqText
     spellCheckId <- execute spellCheckInsertSt spellCheck
     altId <- execute alternativeInsertSt (userId, phraseId, altReqText, spellCheckId)
@@ -100,6 +113,7 @@ chooseAlternativeH :: User -> AlternativeID -> AppM LocPath
 chooseAlternativeH (User { userId }) altId = do
     alt <- execute alternativeGetSt altId >>= maybe (throwError NotFoundError) return
     phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe (throwError InconsistentDataError) return
+    unless (phraseIsOpen phrase) $ throwError PhraseAlreadyClosedError
     when (phraseAuthorId phrase /= userId) $ throwError NotTheAuthorError
     execute phraseSetChosenAltSt (altPhraseId alt, altId)
     return $ phraseId2Loc (altPhraseId alt)
