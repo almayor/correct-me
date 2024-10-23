@@ -24,7 +24,7 @@ Technologies Used:
 
 You can run the application either with `stack` or using `docker-compose`.
 
-### Running with Stack
+### Stack
 
 1. Ensure you have [Stack](https://docs.haskellstack.org/en/stable/README/) installed and a [Postgres](https://www.postgresql.org/download/) database running.
 2. Clone the repository:
@@ -40,7 +40,7 @@ You can run the application either with `stack` or using `docker-compose`.
    ```
 5. The API can be accessed at `localhost:8080/api`
 
-### Running with Docker Compose
+### Docker Compose
 
 1. Ensure you have [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
 2. Clone the repository:
