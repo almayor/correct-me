@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  app:
+    image: almayor/correct-me:latest
+    container_name: correct-me
+    ports:
+      - "8080:8080"
+    environment:
+      - CORRECTME_APP_PORT=8080
+      - CORRECTME_DB_HOST=postgres
+      - CORRECTME_DB_USER=correctme_db_user
+      - CORRECTME_DB_PASSWORD=correctme_db_password
+      - CORRECTME_DB_NAME=correctme_db
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+    command: ["/usr/local/bin/stack", "run"]
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=correctme_db_user
+      - POSTGRES_PASSWORD=correctme_db_password
+      - POSTGRES_DB=correctme_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+volumes:
+  pgdata:
+
+networks:
+  app_network:
+    driver: bridge
