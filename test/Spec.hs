@@ -9,23 +9,17 @@ import qualified Data.ByteString.Char8 as BS
 import Data.Vector (Vector, toList)
 import Network.HTTP.Client hiding (Proxy)
 import Network.HTTP.Types
-import Network.Wai
 import qualified Network.Wai.Handler.Warp as Warp
-import Servant ((:>), (:<|>))
 import Servant as S
 import Servant.API.Flatten (flatten)
-import Servant.Auth as SA
 import Servant.Client
 import Test.Hspec
 import Test.Hspec.Wai
-import Test.Hspec.Wai.Matcher
 import Text.Regex.TDFA ((=~))
 
 import Lib
 import Lib.Api
 import Lib.Types
-import Data.String (fromString)
-import Data.Traversable (for)
 
 import Utils
 
@@ -54,8 +48,12 @@ matchRegex :: String -> String -> Bool
 matchRegex = flip (=~)
 
 -- silencing output and disabling spell checker
+withServerWithoutSpeller :: (Warp.Port -> IO()) -> IO()
+withServerWithoutSpeller action = withModifiedEnv [("CORRECTME_SPELLER_ENABLED", "false")] $ 
+    withServer action
+
 withServer :: (Warp.Port -> IO()) -> IO()
-withServer action = withSilencedOutput $ withModifiedEnv [("CORRECTME_SPELLER_ENABLED", "false")] $ do
+withServer action = withSilencedOutput $ do
     initDb -- initializing database from schema
     application <- getApplication
     Warp.testWithApplication (pure application) action
@@ -95,7 +93,7 @@ publicSpec = with (withSilencedOutput(initDb >> getApplication)) $ do
 
 businessLogicSpec :: Spec
 businessLogicSpec =
-    around withServer $ do
+    around withServerWithoutSpeller $ do
         -- create a servant-client ClientEnv
         baseUrl <- runIO $ parseBaseUrl "http://localhost"
         manager <- runIO $ newManager defaultManagerSettings
@@ -147,7 +145,6 @@ businessLogicSpec =
                     result <- runClientM (getUserC basicAuth userId) (clientEnv port)
                     result `shouldSatisfy` isRight
 
-        describe "GET /api/users/:id" $ do
             it "can get self by id and details match" $ \port -> do
                 Right (LocPath path) <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let userId = UserID . read . last . splitOn "/" $ path
@@ -155,7 +152,6 @@ businessLogicSpec =
                 Right user <- runClientM (getUserC basicAuth userId) (clientEnv port)
                 userUserName user `shouldBe` UserName "test_user1"
 
-        describe "GET /api/users/:id" $ do
             it "can't get a user that doesn't exist" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -166,6 +162,61 @@ businessLogicSpec =
                 result <- runClientM (getUserC basicAuth userId) (clientEnv port)
                 result `shouldSatisfy` isLeft
 
+        describe "GET /api/users/:id/phrases[?open]" $ do
+            it "can list phrases and find new phrases among them" $ \port -> do
+                Right (LocPath userPath) <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let authorId = UserID . read . last . splitOn "/" $ userPath
+                let basicAuth = BasicAuthData "test_user1" "test_pass1"
+                Right (LocPath path1) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase1") (clientEnv port)
+                Right (LocPath path2) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase2") (clientEnv port)
+                result <- runClientM (listPhrasesByUserC basicAuth authorId False) (clientEnv port)
+                case result of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right locPaths -> do
+                        LocPath path1 `shouldSatisfy` (`elem` locPaths)
+                        LocPath path2 `shouldSatisfy` (`elem` locPaths)
+
+            it "can filter by author id" $ \port -> do
+                Right (LocPath userPath1) <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let authorId1 = UserID . read . last . splitOn "/" $ userPath1
+                Right (LocPath userPath2) <- runClientM (registerC $ UserReq "test_user2" "test_pass") (clientEnv port)
+                let authorId2 = UserID . read . last . splitOn "/" $ userPath2
+                let basicAuth1 = BasicAuthData "test_user1" "test_pass1"
+                let basicAuth2 = BasicAuthData "test_user2" "test_pass"
+                Right phraseLocPath1 <- runClientM (insertPhraseC basicAuth1 $ PhraseReq "test_phrase1") (clientEnv port)
+                Right phraseLocPath2 <- runClientM (insertPhraseC basicAuth2 $ PhraseReq "test_phrase2") (clientEnv port)
+                result1 <- runClientM (listPhrasesByUserC basicAuth1 authorId1 False) (clientEnv port)
+                case result1 of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right locPaths -> do
+                        phraseLocPath1 `shouldSatisfy` (`elem` locPaths)
+                        phraseLocPath2 `shouldNotSatisfy` (`elem` locPaths)
+                result2 <- runClientM (listPhrasesByUserC basicAuth1 authorId2 False) (clientEnv port)
+                case result2 of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right locPaths -> do
+                        phraseLocPath2 `shouldSatisfy` (`elem` locPaths)
+                        phraseLocPath1 `shouldNotSatisfy` (`elem` locPaths)
+
+            it "can filter by open phrases" $ \port -> do
+                Right (LocPath userPath) <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let authorId = UserID . read . last . splitOn "/" $ userPath
+                let basicAuth = BasicAuthData "test_user1" "test_pass1"
+                Right (LocPath phrasePath1) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase1") (clientEnv port)
+                let phraseId1 = PhraseID . read . last . splitOn "/" $ phrasePath1
+                Right (LocPath phrasePath2) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase2") (clientEnv port)
+                let phraseId2 = PhraseID . read . last . splitOn "/" $ phrasePath2
+                Right (LocPath altPath1) <- runClientM (insertAlternativeC basicAuth phraseId1 $ AlternativeReq "test_alternative1") (clientEnv port)
+                let altId1 = AlternativeID . read . last . splitOn "/" $ altPath1
+                _ <- runClientM (insertAlternativeC basicAuth phraseId2 $ AlternativeReq "test_alternative2") (clientEnv port)
+                _ <- runClientM (chooseAlternativeC basicAuth altId1) (clientEnv port)
+                result <- runClientM (listPhrasesByUserC basicAuth authorId True) (clientEnv port)
+                case result of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right locPaths -> do
+                        LocPath phrasePath2 `shouldSatisfy` (`elem` locPaths)
+                        LocPath phrasePath1 `shouldNotSatisfy` (`elem` locPaths)
+
         describe "POST /api/phrases" $ do
             it "can insert a phrase" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
@@ -173,14 +224,13 @@ businessLogicSpec =
                 Right (LocPath path) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase1") (clientEnv port)
                 path `shouldSatisfy` matchRegex "^/api/phrases/[0-9]+$"
 
-        describe "GET /api/phrases" $ do
             it "can't insert a phrase with an empty text" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
                 result <- runClientM (insertPhraseC basicAuth $ PhraseReq "") (clientEnv port)
                 result `shouldSatisfy` isLeft
 
-        describe "GET /api/phrases" $ do
+        describe "GET /api/phrases[?open]" $ do
             it "can list phrases and find new phrases among them" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -192,6 +242,25 @@ businessLogicSpec =
                     Right locPaths -> do
                         locPath1 `shouldSatisfy` (`elem` locPaths)
                         locPath2 `shouldSatisfy` (`elem` locPaths)
+
+            it "can filter by open phrases" $ \port -> do
+                _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let basicAuth = BasicAuthData "test_user1" "test_pass1"
+                Right (LocPath phrasePath1) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase1") (clientEnv port)
+                let phraseId1 = PhraseID . read . last . splitOn "/" $ phrasePath1
+                Right (LocPath phrasePath2) <- runClientM (insertPhraseC basicAuth $ PhraseReq "test_phrase2") (clientEnv port)
+                let phraseId2 = PhraseID . read . last . splitOn "/" $ phrasePath2
+                Right (LocPath altPath1) <- runClientM (insertAlternativeC basicAuth phraseId1 $ AlternativeReq "test_alternative1") (clientEnv port)
+                let altId1 = AlternativeID . read . last . splitOn "/" $ altPath1
+                Right (LocPath altPath2) <- runClientM (insertAlternativeC basicAuth phraseId2 $ AlternativeReq "test_alternative2") (clientEnv port)
+                let altId2 = AlternativeID . read . last . splitOn "/" $ altPath2
+                _ <- runClientM (chooseAlternativeC basicAuth altId1) (clientEnv port)
+                result <- runClientM (listPhrasesC basicAuth True) (clientEnv port)
+                case result of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right locPaths -> do
+                        LocPath phrasePath2 `shouldSatisfy` (`elem` locPaths)
+                        LocPath phrasePath1 `shouldNotSatisfy` (`elem` locPaths)
         
         describe "GET /api/phrases/:id" $ do
             it "can get each phrase by id" $ \port -> do
@@ -204,7 +273,6 @@ businessLogicSpec =
                     result <- runClientM (getPhraseC basicAuth phraseId) (clientEnv port)
                     result `shouldSatisfy` isRight
 
-        describe "GET /api/phrases/:id" $ do
             it "can get new phrase by id and details match" $ \port -> do
                 Right (LocPath userPath) <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let authorId = UserID . read . last . splitOn "/" $ userPath
@@ -220,17 +288,16 @@ businessLogicSpec =
                         phraseAuthorId phrase `shouldBe` authorId
                         phraseIsOpen phrase `shouldBe` True
                         phraseNumAlts phrase `shouldBe` 0
-        
-        describe "POST /api/alternatives" $ do
-            it "can insert an alternative" $ \port -> do
+            
+            it "can't get a phrase that doesn't exist" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
-                Right (LocPath phrasePath) <- runClientM (insertPhraseC basicAuth
-                    $ PhraseReq "test_phrase1") (clientEnv port)
-                let phraseId = PhraseID . read . last . splitOn "/" $ phrasePath
-                Right (LocPath path) <- runClientM (insertAlternativeC basicAuth phraseId
-                    $ AlternativeReq "test_alternative1") (clientEnv port)
-                path `shouldSatisfy` matchRegex "^/api/alternatives/[0-9]+$"
+                Right locPaths <- runClientM (listPhrasesC basicAuth False) (clientEnv port)
+                let existingIds = flip map (toList locPaths) $ \(LocPath path) ->
+                        PhraseID . read . last . splitOn "/" $ path
+                let phraseId = findMissing existingIds
+                result <- runClientM (getPhraseC basicAuth phraseId) (clientEnv port)
+                result `shouldSatisfy` isLeft
         
         describe "GET /api/alternatives" $ do
             it "can list alternatives and find new alternatives among them" $ \port -> do
@@ -250,7 +317,6 @@ businessLogicSpec =
                         locPath1 `shouldSatisfy` (`elem` locPaths)
                         locPath2 `shouldSatisfy` (`elem` locPaths)
         
-        describe "GET /api/alternatives" $ do
             it "can get each alternative by id" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -282,8 +348,7 @@ businessLogicSpec =
                         altText alt `shouldBe` T.pack "test_alternative1"
                         altAuthorId alt `shouldBe` authorId
 
-        describe "GET /api/phrases/:id" $ do
-            it "can increase the number of alternatives when inserting an alternative" $ \port -> do
+            it "can increase numAlt when inserting an alternative" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
                 Right (LocPath phrasePath) <- runClientM (insertPhraseC basicAuth
@@ -292,18 +357,7 @@ businessLogicSpec =
                 Right _ <- runClientM (insertAlternativeC basicAuth phraseId
                     $ AlternativeReq "test_alternative1") (clientEnv port)
                 Right phrase <- runClientM (getPhraseC basicAuth phraseId) (clientEnv port)
-                phraseNumAlts phrase `shouldBe` 1
-
-        describe "GET /api/phrases/:id" $ do
-            it "can't get a phrase that doesn't exist" $ \port -> do
-                _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
-                let basicAuth = BasicAuthData "test_user1" "test_pass1"
-                Right locPaths <- runClientM (listPhrasesC basicAuth False) (clientEnv port)
-                let existingIds = flip map (toList locPaths) $ \(LocPath path) ->
-                        PhraseID . read . last . splitOn "/" $ path
-                let phraseId = findMissing existingIds
-                result <- runClientM (getPhraseC basicAuth phraseId) (clientEnv port)
-                result `shouldSatisfy` isLeft
+                phraseNumAlts phrase `shouldBe` 1            
 
         describe "GET /api/phrases/:id/alternatives" $ do
             it "can list alternatives and find new alternatives among them" $ \port -> do
@@ -324,6 +378,16 @@ businessLogicSpec =
                         locPath2 `shouldSatisfy` (`elem` locPaths)
         
         describe "POST /api/phrase/:id/alternatives" $ do
+            it "can insert an alternative" $ \port -> do
+                _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let basicAuth = BasicAuthData "test_user1" "test_pass1"
+                Right (LocPath phrasePath) <- runClientM (insertPhraseC basicAuth
+                    $ PhraseReq "test_phrase1") (clientEnv port)
+                let phraseId = PhraseID . read . last . splitOn "/" $ phrasePath
+                Right (LocPath path) <- runClientM (insertAlternativeC basicAuth phraseId
+                    $ AlternativeReq "test_alternative1") (clientEnv port)
+                path `shouldSatisfy` matchRegex "^/api/alternatives/[0-9]+$"
+    
             it "can't insert an alternative for a non-existent phrase" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -335,7 +399,6 @@ businessLogicSpec =
                     $ AlternativeReq "test_alternative1") (clientEnv port)
                 result `shouldSatisfy` isLeft
         
-        describe "POST /api/phrase/:id/alternatives" $ do
             it "can insert an alternative for a phrase that belongs to another user" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 _ <- runClientM (registerC $ UserReq "test_user2" "test_pass2") (clientEnv port)
@@ -386,7 +449,6 @@ businessLogicSpec =
                 phraseIsOpen phrase `shouldBe` False
                 phraseChosenAltId phrase `shouldBe` Just altId
 
-        describe "PATCH /api/alternatives/:id" $ do
             it "can't choose an alternative that doesn't exist" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -397,7 +459,6 @@ businessLogicSpec =
                 result <- runClientM (chooseAlternativeC basicAuth altId) (clientEnv port)
                 result `shouldSatisfy` isLeft
         
-        describe "PATCH /api/alternatives/:id" $ do
             it "can't create a new alternative for a closed phrase" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -412,7 +473,6 @@ businessLogicSpec =
                     $ AlternativeReq "test_alternative2") (clientEnv port)
                 result `shouldSatisfy` isLeft
         
-        describe "PATCH /api/alternatives/:id" $ do
             it "can't choose an alternative for a closed phrase" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
@@ -429,7 +489,6 @@ businessLogicSpec =
                 result <- runClientM (chooseAlternativeC basicAuth altId2) (clientEnv port)
                 result `shouldSatisfy` isLeft
 
-        describe "PATCH /api/alternatives/:id" $ do
             it "can't choose an alternative for a another user's phrase" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 _ <- runClientM (registerC $ UserReq "test_user2" "test_pass2") (clientEnv port)
@@ -444,7 +503,6 @@ businessLogicSpec =
                 result <- runClientM (chooseAlternativeC basicAuth2 altId) (clientEnv port)
                 result `shouldSatisfy` isLeft
         
-        describe "PATCH /api/alternatives/:id" $ do
             it "can choose another user's alternative for own phrase" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 _ <- runClientM (registerC $ UserReq "test_user2" "test_pass2") (clientEnv port)
@@ -459,8 +517,11 @@ businessLogicSpec =
                 result <- runClientM (chooseAlternativeC basicAuth1 altId) (clientEnv port)
                 result `shouldSatisfy` isRight
 
+-- spellerSpec :: Spec
+-- spellerSpec 
+
 main :: IO ()
 main = hspec $ do
-    publicSpec
-    businessLogicSpec
+    describe "Public/Protected API Tests" publicSpec
+    describe "Business Logic Tests" businessLogicSpec
 
