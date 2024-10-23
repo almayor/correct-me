@@ -6,7 +6,7 @@ module Lib.App.Error (
 ) where
 
 import Control.Monad.Except (MonadError, throwError)
-import Servant (ServerError, err409, err500, err404, errBody, err403)
+import Servant (ServerError, err409, err500, err404, errBody, err403, err422)
 import Hasql.Pool (UsageError)
 import Data.String (fromString)
 import Control.Monad.Logger (MonadLogger)
@@ -17,6 +17,7 @@ type CanFail m = (MonadError AppError m, MonadLogger m)
 data AppError =
       NotFoundError
     | UserAlreadyExistsError
+    | InvalidSignUp String 
     | NotTheAuthorError
     | PhraseAlreadyClosedError
     | InconsistentDataError
@@ -30,6 +31,7 @@ data AppError =
 toHttpError :: AppError -> ServerError
 toHttpError NotFoundError = err404
 toHttpError UserAlreadyExistsError = err409 { errBody = "User already exists" }
+toHttpError (InvalidSignUp e) = err422 { errBody = fromString e }
 toHttpError NotTheAuthorError = err403 { errBody = "Only author can do that" }
 toHttpError PhraseAlreadyClosedError = err409 { errBody = "Phrase is already closed" }
 toHttpError InconsistentDataError = err500 { errBody = "Inconsistent data" }

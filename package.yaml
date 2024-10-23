@@ -43,6 +43,7 @@ dependencies:
   - network-uri
   - optics
   - profunctors
+  - regex-tdfa
   - servant
   - servant-auth
   - servant-auth-docs
