@@ -18,6 +18,13 @@ packages:
       size: 697
   original:
     hackage: validation-selective-0.2.0.0@sha256:cc847f1a110e3b1bd437a5356f115881b61cafcb11781b570b180efd88bf0907,3917
+- completed:
+    hackage: servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
+    pantry-tree:
+      sha256: 04f12c7bef2c3f9a25d94eb9489752ed498db8e243069fe95838dbb51df1dcb3
+      size: 325
+  original:
+    hackage: servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 snapshots:
 - completed:
     sha256: c6274f9587d6bf40b6aaa7d1092684c37a2d8bb1e0df999ae0e2b755db15682d

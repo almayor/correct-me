@@ -35,6 +35,7 @@ packages:
 extra-deps:
 - tomland-1.3.3.3
 - validation-selective-0.2.0.0@sha256:cc847f1a110e3b1bd437a5356f115881b61cafcb11781b570b180efd88bf0907,3917
+- servant-flatten-0.2@sha256:276896f7c5cdec5b8f8493f6205fded0cc602d050b58fdb09a6d7c85c3bb0837,1234
 
 # Dependency packages to be pulled from upstream that are not in the snapshot.
 # These entries can reference officially published versions as well as

@@ -27,7 +27,7 @@ type UsersAPI = "users" :> (
         :> Capture "user_id" UserID :> "phrases" :> QueryFlag "open" :> Get '[JSON] (Vector LocPath)
     )
 
-type PhraseAPI = "phrases" :> (
+type PhrasesAPI = "phrases" :> (
     -- GET /phrases?open
     Summary "Get list of phrases" :> Description "Returns a list of URLs to phrases"
         :> QueryFlag "open" :> Get '[JSON] (Vector LocPath) :<|>
@@ -45,7 +45,7 @@ type PhraseAPI = "phrases" :> (
         :> Capture "phrase_id" PhraseID :> "alternatives" :> ReqBody '[JSON] AlternativeReq :> PostCreated '[JSON] LocPath
     )
 
-type AlternativeAPI = "alternatives" :> (
+type AlternativesAPI = "alternatives" :> (
     -- GET /alternatives/301?author_id=3
     Summary "Get list of alternatives by author" :> Description "Returns a list of URLs to alternatives filtered by author ID"
         :> QueryParam "author_id" UserID :> Get '[JSON] (Vector LocPath) :<|>
@@ -58,7 +58,7 @@ type AlternativeAPI = "alternatives" :> (
     )
 
 type PublicAppAPI = RegisterAPI
-type ProtectedAppAPI = UsersAPI :<|> PhraseAPI :<|> AlternativeAPI
+type ProtectedAppAPI = UsersAPI :<|> PhrasesAPI :<|> AlternativesAPI
 type AppAPI = "api" :> (PublicAppAPI :<|> Auth '[BasicAuth, JWT] User :> ProtectedAppAPI) 
 
 userId2Loc :: UserID -> LocPath

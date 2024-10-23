@@ -1,6 +1,7 @@
 module Lib
     ( runServer
     , initDb
+    , getApplication
     ) where
 
 import Control.Monad.Logger
@@ -12,7 +13,7 @@ import Network.Wai.Handler.Warp (setPort, setBeforeMainLoop, defaultSettings, ru
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Cors (CorsResourcePolicy (..), cors)
 import Network.Wai.Middleware.AddHeaders (addHeaders)
-import Network.Wai (Middleware)
+import Network.Wai (Middleware, Application)
 import Servant.Auth.Server (generateKey)
 
 import Lib.App
@@ -21,6 +22,7 @@ import Lib.Server
 import Lib.Db
 import Lib.Core.Speller
 
+-- | Initialize the database connection pool.
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
     let conSettings = settings dbHost (fromIntegral dbPort) dbUser dbPass dbName
@@ -30,6 +32,7 @@ initialisePool AppConfig{..} = do
         poolLifeTime = 600 -- ten minutes
     Pool.acquire poolSize poolAcquisitionTimeout poolLifeTime poolTimeout conSettings
 
+-- | Create the application environment.
 mkEnv :: AppConfig -> IO Env
 mkEnv config = do
     dbPool <- initialisePool config
@@ -48,6 +51,7 @@ mkEnv config = do
         , envConfig = config
         }
 
+-- | Create the logging middleware.
 mkLoggers :: AppConfig -> IO Middleware
 mkLoggers _ = 
     let loggerSettings = defaultRequestLoggerSettings {
@@ -56,9 +60,11 @@ mkLoggers _ =
         }
     in mkRequestLogger loggerSettings
 
+-- | Middleware to allow CSRF headers.
 allowCsrf :: Middleware
 allowCsrf = addHeaders [("Access-Control-Allow-Headers", "x-csrf-token,authorization")]
 
+-- | Middleware to enable CORS.
 corsified :: Middleware
 corsified = cors (const $ Just CorsResourcePolicy {
         corsOrigins        = Nothing
@@ -71,6 +77,14 @@ corsified = cors (const $ Just CorsResourcePolicy {
     , corsIgnoreFailures = False
     })
 
+-- | Used for testing. Get the WAI application.
+getApplication :: IO Application
+getApplication = do
+    config <- loadConfig
+    env <- mkEnv config
+    return $ application env
+
+-- | Run the server with the given configuration.
 runServer :: IO ()
 runServer = do
     config <- loadConfig
@@ -78,13 +92,14 @@ runServer = do
     loggers <- mkLoggers config
     let warpSettings =
             setPort (appPort config) $
-            setBeforeMainLoop (hPutStrLn stderr ("Starting server on port " ++ show (appPort config)))
+            setBeforeMainLoop (hPutStrLn stderr ("Starting server on port " ++ show (appPort config) ++ "..."))
             defaultSettings
     runSettings warpSettings $ loggers . allowCsrf . corsified $ application env
 
+-- | Initialize the database with the given configuration, and seed it.
 initDb :: IO ()
 initDb = do
     config <- loadConfig
     env <- mkEnv config
-    hPutStrLn stderr "Initialising and seeding database"
+    hPutStrLn stderr "Initializing and seeding database..."
     runAppAsIO env prepareSeededDb

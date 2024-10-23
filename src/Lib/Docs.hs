@@ -50,7 +50,7 @@ instance ToSample (V.Vector LocPath) where
 instance ToSample User where
     toSamples _ = singleSample
         User {
-          userId = 3
+          userId = UserID 3
         , userUserName = "John Doe"
         , userCreatedAt = parseTime "2021-01-01 14:30:00+0000"
         }
@@ -63,8 +63,8 @@ instance ToSample Phrase where
 
 sampleOpenPhrase :: Phrase
 sampleOpenPhrase = Phrase
-    { phraseId = 1
-    , phraseAuthorId = 123
+    { phraseId = PhraseID 1
+    , phraseAuthorId = UserID 123
     , phraseText = "This is a sample phrase."
     , phraseCreatedAt = parseTime "2022-08-10 18:00:00+0000"
     , phraseIsOpen = True
@@ -75,8 +75,8 @@ sampleOpenPhrase = Phrase
 
 sampleClosedPhrase :: Phrase
 sampleClosedPhrase = Phrase
-    { phraseId = 2
-    , phraseAuthorId = 123
+    { phraseId = PhraseID 2
+    , phraseAuthorId = UserID 123
     , phraseText = "Phrase with a speling error"
     , phraseCreatedAt = parseTime "2023-10-01 18:00:10+0000"
     , phraseIsOpen = False
@@ -88,9 +88,9 @@ sampleClosedPhrase = Phrase
 instance ToSample Alternative where
     toSamples _ = singleSample
         Alternative {
-          altId = 301
-        , altAuthorId = 3
-        , altPhraseId = 24
+          altId = AlternativeID 301
+        , altAuthorId = UserID 3
+        , altPhraseId = PhraseID 24
         , altText = "This is an altrnative to a frase."
         , altCreatedAt = parseTime "2023-05-15 12:45:00+0000"
         , altSpellCheck = SpellCheck $ parseJSON "[{\"code\":1,\"pos\":11,\"row\":0,\"col\":11,\"len\":10,\"word\":\"altrnative\",\"s\":[\"alternative\"]},{\"code\":1,\"pos\":27,\"row\":0,\"col\":27,\"len\":5,\"word\":\"prase\",\"s\":[\"phrase\",\"place\",\"praise\",\"price\"]}]"
@@ -122,7 +122,7 @@ docsBS = encodeUtf8
 
     where intro = DocIntro "correct-me" ["Submitting, reviewing, and improving message phrasing with built-in spellcheck."]
 
-type DocsAPI = Raw
+type DocsAPI = "docs" :> Raw
 
 docsServer :: Server DocsAPI
 docsServer = Tagged serveDocs

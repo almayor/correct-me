@@ -16,7 +16,7 @@ import Data.Swagger.Lens (HasAdditionalProperties(..), HasExample (example))
 import Data.String (IsString)
 import Control.Lens ((?~), (&))
 
-import Servant (FromHttpApiData)
+import Servant (FromHttpApiData, ToHttpApiData)
 import Servant.Auth.Server (ToJWT, FromJWT)
 import GHC.Generics (Generic)
 
@@ -24,31 +24,31 @@ import Lib.Core.Utils (modifyLabel)
 
 newtype UserName = UserName { unUserName :: Text }
     deriving (Generic)
-    deriving newtype (Eq, Show, IsString, FromJSON, ToJSON, FromHttpApiData, ToSchema, ToParamSchema)
+    deriving newtype (Eq, Show, IsString, FromJSON, ToJSON, FromHttpApiData, ToHttpApiData, ToSchema, ToParamSchema)
 
 newtype PasswordHash = PasswordHash { unPasswordHash :: Text }
     deriving (Generic)
-    deriving newtype (Eq, Show, FromJSON, ToJSON, FromHttpApiData, ToSchema)
+    deriving newtype (Eq, Show, FromJSON, ToJSON, FromHttpApiData, ToHttpApiData, ToSchema)
 
 newtype PasswordPlain = PasswordPlain { unPasswordPlain :: Text }
     deriving (Generic)
-    deriving newtype (Eq, Show, IsString, FromJSON, ToJSON, FromHttpApiData, ToSchema)
+    deriving newtype (Eq, Show, IsString, FromJSON, ToJSON, FromHttpApiData, ToHttpApiData, ToSchema)
 
 newtype UserID = UserID { unUserId :: Int32 }
     deriving (Generic)
-    deriving newtype (Eq, Show, Num, FromJSON, ToJSON, FromHttpApiData, ToSchema, ToParamSchema)
+    deriving newtype (Eq, Show, Ord, Bounded, Enum, FromJSON, ToJSON, FromHttpApiData, ToHttpApiData, ToSchema, ToParamSchema)
 
 newtype PhraseID = PhraseID { unPhraseId :: Int32 }
     deriving (Generic)
-    deriving newtype (Eq, Show, Num, FromJSON, ToJSON, FromHttpApiData, ToSchema, ToParamSchema)
+    deriving newtype (Eq, Show, Ord, Bounded, Enum, FromJSON, ToJSON, FromHttpApiData, ToHttpApiData, ToSchema, ToParamSchema)
 
 newtype AlternativeID = AlternativeID { unAlternativeId :: Int32 }
     deriving (Generic)
-    deriving newtype (Eq, Show, Num, FromJSON, ToJSON, FromHttpApiData, ToSchema, ToParamSchema)
+    deriving newtype (Eq, Show, Ord, Bounded, Enum, FromJSON, ToJSON, FromHttpApiData, ToHttpApiData, ToSchema, ToParamSchema)
 
 newtype SpellCheckID = SpellCheckID { unSpellCheckId :: Int32 }
     deriving (Generic)
-    deriving newtype (Eq, Show, Num, FromJSON, ToJSON)
+    deriving newtype (Eq, Show, Ord, Bounded, Enum, FromJSON, ToJSON)
 
 newtype SpellCheck = SpellCheck { unSpellCheck :: Value }
     deriving (Generic)
@@ -63,7 +63,7 @@ instance ToSchema SpellCheck where
 -- location path, e.g. "/api/users/3"
 newtype LocPath = LocPath String
     deriving (Generic)
-    deriving newtype (Show, IsString, FromJSON, ToJSON)
+    deriving newtype (Eq, Show, IsString, FromJSON, ToJSON)
 
 instance ToSchema LocPath where
   declareNamedSchema _ = do

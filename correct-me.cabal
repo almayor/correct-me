@@ -60,6 +60,7 @@ library
     , bcrypt
     , bytestring
     , casing
+    , containers
     , contravariant-extras
     , deriving-aeson
     , either
@@ -69,6 +70,7 @@ library
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , http-client
     , http-types
     , jose
     , lens
@@ -81,11 +83,13 @@ library
     , regex-tdfa
     , servant
     , servant-auth
+    , servant-auth-client
     , servant-auth-docs
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
     , servant-docs
+    , servant-flatten
     , servant-server
     , servant-swagger
     , servant-swagger-ui
@@ -121,6 +125,7 @@ executable correct-me
     , bcrypt
     , bytestring
     , casing
+    , containers
     , contravariant-extras
     , correct-me
     , deriving-aeson
@@ -131,6 +136,7 @@ executable correct-me
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , http-client
     , http-types
     , jose
     , lens
@@ -143,11 +149,13 @@ executable correct-me
     , regex-tdfa
     , servant
     , servant-auth
+    , servant-auth-client
     , servant-auth-docs
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
     , servant-docs
+    , servant-flatten
     , servant-server
     , servant-swagger
     , servant-swagger-ui
@@ -171,11 +179,14 @@ test-suite correct-me-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Utils
       Paths_correct_me
   autogen-modules:
       Paths_correct_me
   hs-source-dirs:
       test
+  default-extensions:
+      ConstraintKinds , DataKinds , DeriveAnyClass , DeriveGeneric , DerivingStrategies , FlexibleContexts , GeneralizedNewtypeDeriving , InstanceSigs , MultiParamTypeClasses , NamedFieldPuns , OverloadedStrings , RecordWildCards , ScopedTypeVariables , TemplateHaskell , TypeApplications , TypeFamilies , TypeOperators
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -184,6 +195,7 @@ test-suite correct-me-test
     , bcrypt
     , bytestring
     , casing
+    , containers
     , contravariant-extras
     , correct-me
     , deriving-aeson
@@ -194,6 +206,9 @@ test-suite correct-me-test
     , hasql-pool
     , hasql-th
     , hasql-transaction
+    , hspec
+    , hspec-wai
+    , http-client
     , http-types
     , jose
     , lens
@@ -206,14 +221,17 @@ test-suite correct-me-test
     , regex-tdfa
     , servant
     , servant-auth
+    , servant-auth-client
     , servant-auth-docs
     , servant-auth-server
     , servant-auth-swagger
     , servant-client
     , servant-docs
+    , servant-flatten
     , servant-server
     , servant-swagger
     , servant-swagger-ui
+    , split
     , swagger2
     , text
     , time
