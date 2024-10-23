@@ -19,9 +19,7 @@ import Lib.App
 import Lib.Config
 import Lib.Server
 import Lib.Db
-import Lib.Docs
 import Lib.Core.Speller
-import Lib.Swagger
 
 initialisePool :: AppConfig -> IO Pool
 initialisePool AppConfig{..} = do
@@ -52,11 +50,11 @@ mkEnv config = do
 
 mkLoggers :: AppConfig -> IO Middleware
 mkLoggers _ = 
-    let stdoutLoggerSettings = defaultRequestLoggerSettings {
+    let loggerSettings = defaultRequestLoggerSettings {
           outputFormat = Apache FromHeader,      -- Use Apache log format
-          destination = Handle stdout            -- Log to stdout 
+          destination = Handle stderr            -- Log to stderr 
         }
-    in mkRequestLogger stdoutLoggerSettings
+    in mkRequestLogger loggerSettings
 
 allowCsrf :: Middleware
 allowCsrf = addHeaders [("Access-Control-Allow-Headers", "x-csrf-token,authorization")]
