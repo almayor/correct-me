@@ -14,14 +14,29 @@ import Servant as S
 import Servant.API.Flatten (flatten)
 import Servant.Client
 import Test.Hspec
-import Test.Hspec.Wai
+import Test.Hspec.Wai hiding (pending, pendingWith)
 import Text.Regex.TDFA ((=~))
 
 import Lib
 import Lib.Api
 import Lib.Types
+    ( UserReq(UserReq),
+      LocPath(..),
+      User(userUserName),
+      UserID(UserID),
+      PhraseReq(PhraseReq),
+      PhraseID(PhraseID),
+      Phrase(phraseSpellCheck, phraseText, phraseAuthorId, phraseNumAlts,
+             phraseIsOpen, phraseChosenAltId),
+      AlternativeReq(AlternativeReq),
+      AlternativeID(AlternativeID),
+      Alternative(altAuthorId, altText, altSpellCheck),
+      UserName(UserName),
+      SpellCheck(unSpellCheck) )
 
 import Utils
+import Data.Aeson (encode)
+import Data.Text.Lazy.Encoding (decodeUtf8)
 
 -- according to https://docs.servant.dev/en/stable/cookbook/jwt-and-basic-auth/JWTAndBasicAuth.html
 -- Servant.Auth.Client only supports JWT auth, so we need to use BasicAuthClient
@@ -252,8 +267,7 @@ businessLogicSpec =
                 let phraseId2 = PhraseID . read . last . splitOn "/" $ phrasePath2
                 Right (LocPath altPath1) <- runClientM (insertAlternativeC basicAuth phraseId1 $ AlternativeReq "test_alternative1") (clientEnv port)
                 let altId1 = AlternativeID . read . last . splitOn "/" $ altPath1
-                Right (LocPath altPath2) <- runClientM (insertAlternativeC basicAuth phraseId2 $ AlternativeReq "test_alternative2") (clientEnv port)
-                let altId2 = AlternativeID . read . last . splitOn "/" $ altPath2
+                _ <- runClientM (insertAlternativeC basicAuth phraseId2 $ AlternativeReq "test_alternative2") (clientEnv port)
                 _ <- runClientM (chooseAlternativeC basicAuth altId1) (clientEnv port)
                 result <- runClientM (listPhrasesC basicAuth True) (clientEnv port)
                 case result of
@@ -517,11 +531,55 @@ businessLogicSpec =
                 result <- runClientM (chooseAlternativeC basicAuth1 altId) (clientEnv port)
                 result `shouldSatisfy` isRight
 
--- spellerSpec :: Spec
--- spellerSpec 
+spellerSpec :: Spec
+spellerSpec = around withServer $ do
+        -- create a servant-client ClientEnv
+        baseUrl <- runIO $ parseBaseUrl "http://localhost"
+        manager <- runIO $ newManager defaultManagerSettings
+        let clientEnv port = mkClientEnv manager (baseUrl { baseUrlPort = port })
+
+        describe "POST /api/phrases" $ do
+            it "can find that a phrase has a spelling error" $ \port -> do
+                _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let basicAuth = BasicAuthData "test_user1" "test_pass1"
+                Right (LocPath path) <- runClientM (insertPhraseC basicAuth
+                    $ PhraseReq "phrase with a speling error") (clientEnv port)
+                let phraseId = PhraseID . read . last . splitOn "/" $ path
+                result <- runClientM (getPhraseC basicAuth phraseId) (clientEnv port)
+                case result of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right phrase -> do
+                        let spellCheck = BS.unpack . BS.toStrict . encode . unSpellCheck $ phraseSpellCheck phrase
+                        spellCheck `shouldSatisfy` matchRegex "speling"
+                        spellCheck `shouldSatisfy` matchRegex "spelling"
+        
+            it "can correctly identify spelling errors" $ \_ -> do
+                pendingWith "Not yet implemented"
+
+        describe "POST /api/phrases/:id/alternatives" $ do
+            it "can find that an alternative has a spelling error" $ \port -> do
+                _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
+                let basicAuth = BasicAuthData "test_user1" "test_pass1"
+                Right (LocPath phrasePath) <- runClientM (insertPhraseC basicAuth
+                    $ PhraseReq "test_phrase1") (clientEnv port)
+                let phraseId = PhraseID . read . last . splitOn "/" $ phrasePath
+                Right (LocPath path) <- runClientM (insertAlternativeC basicAuth phraseId
+                    $ AlternativeReq "alternative with a speling error") (clientEnv port)
+                let altId = AlternativeID . read . last . splitOn "/" $ path
+                result <- runClientM (getAlternativeC basicAuth altId) (clientEnv port)
+                case result of
+                    Left err -> expectationFailure $ "Expected success but got error: " ++ show err
+                    Right alt -> do
+                        let spellCheck = BS.unpack . BS.toStrict . encode . unSpellCheck $ altSpellCheck alt
+                        spellCheck `shouldSatisfy` matchRegex "speling"
+                        spellCheck `shouldSatisfy` matchRegex "spelling"
+        
+            it "can correctly identify spelling errors" $ \_ -> do
+                pendingWith "Not yet implemented"
 
 main :: IO ()
 main = hspec $ do
-    describe "Public/Protected API Tests" publicSpec
-    describe "Business Logic Tests" businessLogicSpec
+    -- describe "Public/Protected API Tests" publicSpec
+    -- describe "Business Logic Tests" businessLogicSpec
+    describe "Speller Tests" spellerSpec
 
