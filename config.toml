@@ -5,9 +5,9 @@ app.version     = "0.1"
 
 db.host         = "localhost"
 db.port         = 5432
-db.name         = "mydb"
-db.user         = "myuser"
-db.pass         = "mypassword"
+db.name         = "correctme_db"
+db.user         = "correctme_db_user"
+db.pass         = "correctme_db_password"
 
 speller.url     = "https://speller.yandex.net/services/spellservice.json/checkText"
 speller.enabled = true

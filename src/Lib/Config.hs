@@ -10,7 +10,7 @@ import Toml (TomlCodec, (.=))
 import qualified Toml
 import Network.URI (URI, parseURI)
 import Data.Text (Text, pack, unpack)
-
+import Data.String (fromString)
 
 data AppConfig = AppConfig
     { appName         :: !Text
@@ -47,7 +47,56 @@ configCodec = AppConfig
     <*> Toml.bool "speller.enabled" .= spellerEnabled
     <*> uriCodec "speller.url"      .= spellerUri
 
+-- Looks up environmental variable or returns a default value
+overrideInt :: String -> Int -> IO Int
+overrideInt envKey defaultValue = do
+    envValue <- lookupEnv envKey
+    return $ maybe defaultValue read envValue
+
+-- Looks up environmental variable or returns a default value
+overrideByteString :: String -> ByteString -> IO ByteString
+overrideByteString envKey defaultValue = do
+    envValue <- lookupEnv envKey
+    return $ maybe defaultValue fromString envValue
+
+-- Looks up environmental variable or returns a default value
+overrideBool :: String -> Bool -> IO Bool
+overrideBool envKey defaultValue = do
+    envValue <- lookupEnv envKey
+    return $ maybe defaultValue parseBool envValue
+  where
+    parseBool "true"  = True
+    parseBool "false" = False
+    parseBool _       = defaultValue
+
+-- Looks up environmental variable or returns a default value
+overrideURI :: String -> URI -> IO URI
+overrideURI envKey defaultValue = do
+    envValue <- lookupEnv envKey
+    return $ maybe defaultValue (fromMaybe defaultValue . parseURI) envValue
+
 loadConfig :: IO AppConfig
 loadConfig = do
     configFile <- fromMaybe "config.toml" <$> lookupEnv "CONFIG_FILE"
-    Toml.decodeFile configCodec configFile
+    config <- Toml.decodeFile configCodec configFile
+
+    -- Override with environment variables if present
+    appPort <- overrideInt "CORRECTME_APP_PORT" (appPort config)
+    dbHost <- overrideByteString "CORRECTME_DB_HOST" (dbHost config)
+    dbPort <- overrideInt "CORRECTME_DB_PORT" (dbPort config)
+    dbName <- overrideByteString "CORRECTME_DB_NAME" (dbName config)
+    dbUser <- overrideByteString "CORRECTME_DB_USER" (dbUser config)
+    dbPass <- overrideByteString "CORRECTME_DB_PASS" (dbPass config)
+    spellerEnabled <- overrideBool "CORRECTME_SPELLER_ENABLED" (spellerEnabled config)
+    spellerUri <- overrideURI "CORRECTME_SPELLER_URL" (spellerUri config)
+
+    return config
+        { appPort = appPort
+        , dbHost = dbHost
+        , dbPort = dbPort
+        , dbName = dbName
+        , dbUser = dbUser
+        , dbPass = dbPass
+        , spellerEnabled = spellerEnabled
+        , spellerUri = spellerUri
+        }
