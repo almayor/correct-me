@@ -22,7 +22,7 @@ Technologies Used:
 
 ## Running the application
 
-You can run the application either with `stack` or using `docker-compose`.
+You can run the application either with `stack` or using `docker-compose`. The API can be accessed at `localhost:8080`. Note that most endpoints are protected by [BasicAuth](https://en.wikipedia.org/wiki/Basic_access_authentication) or [JWT](https://jwt.io/). To access them, you need to register by issuing a POST request to `/api/users`. See [API Documentation](#api-documentation) for details.
 
 ### Stack
 
@@ -38,7 +38,6 @@ You can run the application either with `stack` or using `docker-compose`.
    stack build
    stack run
    ```
-5. The API can be accessed at `localhost:8080`
 
 ### Docker Compose
 
@@ -52,9 +51,6 @@ You can run the application either with `stack` or using `docker-compose`.
    ```sh
    docker-compose up
    ```
-4. The API can be accessed at `localhost:8080`
-
-Note that most endpoints are protected by [BasicAuth](https://en.wikipedia.org/wiki/Basic_access_authentication) or [JWT](https://jwt.io/). To access them, you need to register a user by issuing a POST request to `/api/users`. See [API Documentation](#api-documentation) for details.
 
 ## API Documentation
 
