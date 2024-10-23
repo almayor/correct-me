@@ -16,7 +16,6 @@ services:
       - postgres
     networks:
       - app_network
-    command: ["/usr/local/bin/stack", "run"]
 
   postgres:
     image: postgres:latest
