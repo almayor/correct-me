@@ -10,7 +10,7 @@ import qualified Hasql.Pool as Pool
 import System.IO (stdout, stderr, hPutStrLn)
 import Network.Wai.Handler.Warp (setPort, setBeforeMainLoop, defaultSettings, runSettings)
 import Network.Wai.Middleware.RequestLogger
-import Network.Wai.Middleware.Cors (simpleCors, CorsResourcePolicy (..), cors)
+import Network.Wai.Middleware.Cors (CorsResourcePolicy (..), cors)
 import Network.Wai.Middleware.AddHeaders (addHeaders)
 import Network.Wai (Middleware)
 import Servant.Auth.Server (generateKey)
