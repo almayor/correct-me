@@ -11,5 +11,3 @@ db.pass         = "mypassword"
 
 speller.url     = "https://speller.yandex.net/services/spellservice.json/checkText"
 speller.enabled = true
-
-swagger.port    = 8081

@@ -24,7 +24,6 @@ data AppConfig = AppConfig
     , dbPass          :: !ByteString
     , spellerEnabled  :: !Bool
     , spellerUri      :: !URI
-    , swaggerPort     :: !Int
     }
 
 -- Define the TomlBiMap for URI
@@ -47,7 +46,6 @@ configCodec = AppConfig
     <*> Toml.byteString "db.pass"   .= dbPass
     <*> Toml.bool "speller.enabled" .= spellerEnabled
     <*> uriCodec "speller.url"      .= spellerUri
-    <*> Toml.int "swagger.port"     .= swaggerPort
 
 loadConfig :: IO AppConfig
 loadConfig = do
