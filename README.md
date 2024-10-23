@@ -38,7 +38,7 @@ You can run the application either with `stack` or using `docker-compose`.
    stack build
    stack run
    ```
-5. The API can be accessed at `localhost:8080/api`
+5. The API can be accessed at `localhost:8080`
 
 ### Docker Compose
 
