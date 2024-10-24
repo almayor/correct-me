@@ -60,7 +60,7 @@ jobs:
       - name: Run tests inside Docker container
         run: |
           docker-compose up -d
-          docker-compose exec app stack test
+          docker-compose exec -T app stack test
       
       - name: Push Docker image for linux/amd64
         uses: docker/build-push-action@v5
