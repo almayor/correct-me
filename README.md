@@ -61,10 +61,10 @@ Note that Servant UI does not display error messages for responses. For example,
 
 ## TO-DO
 
-- [] A front-end client for the API
-- [] Add more tests
-- [] [List alternative responses and exceptions](https://docs.servant.dev/en/stable/cookbook/uverb/UVerb.html) in Swagger and Servant.Docs
-- [] Use pagination with [servant-pagination](https://hackage.haskell.org/package/servant-pagination)
-- [] Use Redis to cache requests
-- [] Implement rate limiting to prevent abuse
-- [] Add monitoring and alerting for the application
+- [ ] A front-end client for the API
+- [ ] Add more tests
+- [ ] [List alternative responses and exceptions](https://docs.servant.dev/en/stable/cookbook/uverb/UVerb.html) in Swagger and Servant.Docs
+- [ ] Use pagination with [servant-pagination](https://hackage.haskell.org/package/servant-pagination)
+- [ ] Use Redis to cache requests
+- [ ] Implement rate limiting to prevent abuse
+- [ ] Add monitoring and alerting for the application
