@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE UndecidableInstances #-}
-module Lib.Server.ThrowAll where
+module Lib.Server.ThrowAll (ThrowAll(throwAll)) where
 
 import Control.Monad.Except (throwError)
 import Servant ((:<|>)(..))
