@@ -34,6 +34,12 @@ jobs:
         with:
           platforms: all
       
+      - name: Check disk space after build
+        run: df -h
+  
+      - name: Check memory usage after build
+        run: free -m
+        
       - name: Build and cache Docker image for linux/amd64 (no push)
         uses: docker/build-push-action@v5
         with:
@@ -44,8 +50,14 @@ jobs:
           #caching intermediate layers
           cache-from: type=registry,ref=almayor/correct-me:cache
           cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
-           #don't push before testing
+          #don't push before testing
           push: false
+      
+      - name: Check disk space after build
+        run: df -h
+
+      - name: Check memory usage after build
+        run: free -m
 
       - name: Build and cache Docker image for linux/arm64 (no push)
         uses: docker/build-push-action@v5
@@ -57,7 +69,7 @@ jobs:
           #caching intermediate layers
           cache-from: type=registry,ref=almayor/correct-me:cache
           cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
-            #don't push before testing
+          #don't push before testing
           push: false
 
       - name: Install Docker Compose
