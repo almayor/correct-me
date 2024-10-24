@@ -1,5 +1,3 @@
-module Main where
-
 import Control.Monad (forM_)
 import Data.ByteString (ByteString)
 import Data.Either (isLeft, isRight)
@@ -543,18 +541,22 @@ spellerSpec = around withServer $ do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
                 Right (LocPath path) <- runClientM (insertPhraseC basicAuth
-                    $ PhraseReq "phrase with a speling error") (clientEnv port)
+                    $ PhraseReq "a phraze with a spellin eror") (clientEnv port)
                 let phraseId = PhraseID . read . last . splitOn "/" $ path
                 result <- runClientM (getPhraseC basicAuth phraseId) (clientEnv port)
                 case result of
                     Left err -> expectationFailure $ "Expected success but got error: " ++ show err
                     Right phrase -> do
                         let spellCheck = BS.unpack . BS.toStrict . encode . unSpellCheck $ phraseSpellCheck phrase
-                        spellCheck `shouldSatisfy` matchRegex "speling"
+                        spellCheck `shouldSatisfy` matchRegex "phraze"
+                        spellCheck `shouldSatisfy` matchRegex "phrase"
+                        spellCheck `shouldSatisfy` matchRegex "spellin"
                         spellCheck `shouldSatisfy` matchRegex "spelling"
+                        spellCheck `shouldSatisfy` matchRegex "eror"
+                        spellCheck `shouldSatisfy` matchRegex "error"
         
-            it "can correctly identify spelling errors" $ \_ -> do
-                pendingWith "Not yet implemented"
+            -- it "can correctly identify spelling errors" $ \_ -> do
+            --     pendingWith "Not yet implemented"
 
         describe "POST /api/phrases/:id/alternatives" $ do
             it "can find that an alternative has a spelling error" $ \port -> do
@@ -564,22 +566,26 @@ spellerSpec = around withServer $ do
                     $ PhraseReq "test_phrase1") (clientEnv port)
                 let phraseId = PhraseID . read . last . splitOn "/" $ phrasePath
                 Right (LocPath path) <- runClientM (insertAlternativeC basicAuth phraseId
-                    $ AlternativeReq "alternative with a speling error") (clientEnv port)
+                    $ AlternativeReq "elternativ with a spelliing errr") (clientEnv port)
                 let altId = AlternativeID . read . last . splitOn "/" $ path
                 result <- runClientM (getAlternativeC basicAuth altId) (clientEnv port)
                 case result of
                     Left err -> expectationFailure $ "Expected success but got error: " ++ show err
                     Right alt -> do
                         let spellCheck = BS.unpack . BS.toStrict . encode . unSpellCheck $ altSpellCheck alt
-                        spellCheck `shouldSatisfy` matchRegex "speling"
+                        spellCheck `shouldSatisfy` matchRegex "elternativ"
+                        spellCheck `shouldSatisfy` matchRegex "alternative"
+                        spellCheck `shouldSatisfy` matchRegex "spelliing"
                         spellCheck `shouldSatisfy` matchRegex "spelling"
+                        spellCheck `shouldSatisfy` matchRegex "errr"
+                        spellCheck `shouldSatisfy` matchRegex "error"
         
-            it "can correctly identify spelling errors" $ \_ -> do
-                pendingWith "Not yet implemented"
+            -- it "can correctly identify spelling errors" $ \_ -> do
+            --     pendingWith "Not yet implemented"
 
 main :: IO ()
 main = hspec $ do
-    -- describe "Public/Protected API Tests" publicSpec
-    -- describe "Business Logic Tests" businessLogicSpec
+    describe "Public/Protected API Tests" publicSpec
+    describe "Business Logic Tests" businessLogicSpec
     describe "Speller Tests" spellerSpec
 
