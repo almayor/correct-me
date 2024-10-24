@@ -34,17 +34,30 @@ jobs:
         with:
           platforms: all
       
-      - name: Build and cache Docker image (no push)
+      - name: Build and cache Docker image for linux/amd64 (no push)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           tags: almayor/correct-me:latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           #caching intermediate layers
           cache-from: type=registry,ref=almayor/correct-me:cache
           cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
            #don't push before testing
+          push: false
+
+      - name: Build and cache Docker image for linux/arm64 (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          tags: almayor/correct-me:latest
+          platforms: linux/arm64
+          #caching intermediate layers
+          cache-from: type=registry,ref=almayor/correct-me:cache
+          cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
+            #don't push before testing
           push: false
 
       - name: Install Docker Compose
@@ -64,5 +77,6 @@ jobs:
           context: .
           file: ./Dockerfile
           tags: almayor/correct-me:latest
+          platforms: linux/amd64,linux/arm64
           cache-from: type=registry,ref=almayor/correct-me:cache
           push: true  # Push the image to the registry
