@@ -2,6 +2,9 @@ version: '3.8'
 
 services:
   app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: almayor/correct-me:latest
     container_name: correct-me
     ports:
