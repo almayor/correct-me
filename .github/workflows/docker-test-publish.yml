@@ -47,6 +47,9 @@ jobs:
           #don't push before testing
           push: false
 
+      - name: List Docker images in cache
+        run: docker image ls
+
       - name: Install Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
