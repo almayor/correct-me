@@ -22,7 +22,7 @@ optionsParser = Options
         <> help "Path to the configuration file"
         <> showDefault )
     <*> ( optional . strOption )
-        ( long "out-docs" 
+        ( long "output-docs" 
         <> metavar "DOCS_OUTPUT"
         <> help "Write API docs (markdown) to DOCS_OUTPUT and exit (optional)" )
 
