@@ -26,7 +26,7 @@ The API is protected by [BasicAuth](https://en.wikipedia.org/wiki/Basic_access_a
 
 You can run the application either with `stack` or using `docker-compose`. The API can be accessed at `localhost:8080`.
 
-### Stack
+### Build manually
 
 1. Ensure you have [Stack](https://docs.haskellstack.org/en/stable/README/) installed and a [Postgres](https://www.postgresql.org/download/) database running.
 2. Clone the repository:
@@ -41,7 +41,7 @@ You can run the application either with `stack` or using `docker-compose`. The A
    stack run
    ```
 
-### Docker Compose
+### Use Docker Compose
 
 1. Ensure you have [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
 2. Clone the repository:
@@ -54,14 +54,26 @@ You can run the application either with `stack` or using `docker-compose`. The A
    docker-compose up
    ```
 
-## Testing
+## Testing the application
 
-Runs `stack test` to test the application.
+I am using [hspec](https://hackage.haskell.org/package/hspec) for testing. You can run the tests as follows:
+
+```sh
+docker-compose up
+docker-compose exec app stack test
+```
 
 <details>
-<summary>Sample output</summary>
+<summary>Example output</summary>
 </br><img src="docs/tests_output.svg">
 </details>
+
+## CI/CD
+
+Github Actions have been set up to continuously
+1. test the project
+2. re-built a Docker image and push it to [Docker Hub](https://hub.docker.com/r/almayor/correct-me)
+3. update [API Documentation](docs/api_docs.md)
 
 ## API Documentation
 
