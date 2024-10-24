@@ -7,7 +7,7 @@ on:
     - 'exe/**'
     - 'test/**'
     - 'Dockerfile'
-    - '.github/workflows/docker-publish.yml'
+    - '.github/workflows/docker-test-publish.yml'
     - 'package.yaml'
     - 'stack.yaml'
     - 'docker-compose.yaml'
