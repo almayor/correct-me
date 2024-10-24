@@ -28,8 +28,8 @@ optionsParser = Options
 
 optsParserInfo :: AppConfig -> ParserInfo Options
 optsParserInfo config = info (optionsParser <**> helper)
-  ( fullDesc
- <> progDesc (unpack $ appDescription config) )
+    ( fullDesc
+  <> progDesc (unpack $ appDescription config) )
 
 main :: IO ()
 main = do
