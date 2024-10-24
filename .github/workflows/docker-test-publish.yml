@@ -44,8 +44,9 @@ jobs:
           #caching intermediate layers
           cache-from: type=registry,ref=almayor/correct-me:cache
           cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
-          #don't push before testing
+          #don't push before testing but load to `docker image ls`
           push: false
+          load: true
 
       - name: List Docker images in cache
         run: docker image ls
@@ -61,12 +62,13 @@ jobs:
           docker-compose up -d
           docker-compose exec app stack test
       
-      - name: Push Docker image
+      - name: Push Docker image for linux/amd64
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           tags: almayor/correct-me:latest
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           cache-from: type=registry,ref=almayor/correct-me:cache
-          push: true  # Push the image to the registry
+          # push to the registry
+          push: true
