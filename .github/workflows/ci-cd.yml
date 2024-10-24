@@ -7,7 +7,7 @@ on:
     - 'exe/**'
     - 'test/**'
     - 'Dockerfile'
-    - '.github/workflows/docker-test-publish.yml'
+    - '.github/workflows/ci-cd.yml'
     - 'package.yaml'
     - 'stack.yaml'
     - 'docker-compose.yaml'
@@ -72,3 +72,37 @@ jobs:
           cache-from: type=registry,ref=almayor/correct-me:cache
           # push to the registry
           push: true
+  
+  update-api-docs:
+    needs: run-tests-and-push-image
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout the code from the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Set up Docker
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    
+    # Get updated API docs
+    - name: Write docs
+      run: |
+        docker pull almayor/correct-me:latest
+        docker run almayor/correct-me:latest --output-docs docs/api_docs.md
+
+    # Commit and push the updated file back to the repository
+    - name: Commit and Push Documentation
+      env:
+        GH_PAT: ${{ secrets.GH_PAT }}
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add docs/api_docs.md
+        if git diff-index --quiet HEAD; then
+          echo "No changes to commit"
+        else
+          git commit -m "Update API documentation on push"
+          git push https://x-access-token:${GH_PAT}@github.com/almayor/correct-me.git HEAD:main
+        fi
