@@ -41,6 +41,7 @@ dependencies:
   - mtl
   - network-uri
   - optics
+  - optparse-applicative
   - profunctors
   - regex-tdfa
   - servant

@@ -1,6 +1,7 @@
 module Lib.Config
     ( AppConfig(..)
     , loadConfig
+    , loadConfigFromFile
     ) where
 
 import Data.ByteString (ByteString)
@@ -79,8 +80,10 @@ overrideURI envKey defaultValue = do
     return $ maybe defaultValue (fromMaybe defaultValue . parseURI) envValue
 
 loadConfig :: IO AppConfig
-loadConfig = do
-    configFile <- fromMaybe "config.toml" <$> lookupEnv "CONFIG_FILE"
+loadConfig = loadConfigFromFile "config.toml"
+
+loadConfigFromFile :: FilePath -> IO AppConfig
+loadConfigFromFile configFile = do
     config <- Toml.decodeFile configCodec configFile
 
     -- Override with environment variables if present

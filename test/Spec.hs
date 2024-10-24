@@ -67,8 +67,9 @@ withServerWithoutSpeller action = withModifiedEnv [("CORRECTME_SPELLER_ENABLED",
 
 withServer :: (Warp.Port -> IO()) -> IO()
 withServer action = withSilencedOutput $ do
-    initDb -- initializing database from schema
-    application <- getApplication
+    config <- loadConfig
+    initDb config -- initializing database from schema
+    application <- getApplication config
     Warp.testWithApplication (pure application) action
 
 publicSpec :: Spec

@@ -2,6 +2,8 @@ module Lib
     ( runServer
     , initDb
     , getApplication
+    , writeDocs
+    , module Lib.Config
     ) where
 
 import Control.Monad.Logger
@@ -20,7 +22,9 @@ import Lib.App
 import Lib.Config
 import Lib.Server
 import Lib.Db
+import Lib.Docs
 import Lib.Core.Speller
+import Network.Wai.Parse (File)
 
 -- | Initialize the database connection pool.
 initialisePool :: AppConfig -> IO Pool
@@ -78,16 +82,14 @@ corsified = cors (const $ Just CorsResourcePolicy {
     })
 
 -- | Used for testing. Get the WAI application.
-getApplication :: IO Application
-getApplication = do
-    config <- loadConfig
+getApplication :: AppConfig -> IO Application
+getApplication config = do
     env <- mkEnv config
     return $ application env
 
 -- | Run the server with the given configuration.
-runServer :: IO ()
-runServer = do
-    config <- loadConfig
+runServer :: AppConfig -> IO ()
+runServer config = do
     env <- mkEnv config
     loggers <- mkLoggers config
     let warpSettings =
@@ -97,9 +99,13 @@ runServer = do
     runSettings warpSettings $ loggers . allowCsrf . corsified $ application env
 
 -- | Initialize the database with the given configuration, and seed it.
-initDb :: IO ()
-initDb = do
-    config <- loadConfig
+initDb :: AppConfig -> IO ()
+initDb config = do
     env <- mkEnv config
     hPutStrLn stderr "Initializing and seeding database..."
     runAppAsIO env prepareSeededDb
+
+-- | Write API docs to a file.
+writeDocs :: FilePath -> IO ()
+writeDocs path = writeFile path docsMarkdown
+

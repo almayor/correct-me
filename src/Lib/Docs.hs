@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Lib.Docs (DocsAPI, docsServer) where
+module Lib.Docs (DocsAPI, docsServer, docsMarkdown) where
 
 import Data.Aeson (Value, decode)
 import Data.Time (UTCTime(..), parseTimeOrError, defaultTimeLocale)
@@ -114,18 +114,15 @@ parseJSON = fromMaybe undefined . decode . fromString
 parseTime :: String -> UTCTime
 parseTime = parseTimeOrError True defaultTimeLocale "%Y-%m-%d %H:%M:%S%z"
 
-docsBS :: ByteString
-docsBS = encodeUtf8
-       . pack
-       . markdown
-       $ docsWithIntros [intro] (Proxy @AppAPI)
-
+docsMarkdown :: String
+docsMarkdown = markdown $ docsWithIntros [intro] (Proxy @AppAPI)
     where intro = DocIntro "correct-me" ["Submitting, reviewing, and improving message phrasing with built-in spellcheck."]
 
 type DocsAPI = "docs" :> Raw
 
 docsServer :: Server DocsAPI
 docsServer = Tagged serveDocs
-    where 
+    where
+    docsBS = encodeUtf8 . pack $ docsMarkdown
     serveDocs _ respond' = respond' $ responseLBS status200 [plain] docsBS
     plain = ("Content-Type", "text/plain")
