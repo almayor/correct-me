@@ -3,7 +3,7 @@ version: '3.8'
 services:
   app:
     image: almayor/correct-me:latest
-    pull_policy: missing
+    pull_policy: if_not_present
     build:
       context: .
       dockerfile: Dockerfile
