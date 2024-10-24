@@ -1,13 +1,13 @@
 app.title       = "correct-me"
 app.description = "Submitting, reviewing, and improving message phrasing with built-in spellcheck"
-app.port        = 8080
+app.port        = 8080                      #overriden by env variable CORRECTME_APP_PORT
 app.version     = "0.1"
 
-db.host         = "localhost"
-db.port         = 5432
-db.name         = "correctme_db"
-db.user         = "correctme_db_user"
-db.pass         = "correctme_db_password"
+db.host         = "localhost"               #overriden by env variable CORRECTME_DB_HOST
+db.port         = 5432                      #overriden by env variable CORRECTME_DB_PORT
+db.name         = "correctme_db"            #overriden by env variable CORRECTME_DB_NAME
+db.user         = "correctme_db_user"       #overriden by env variable CORRECTME_DB_USER
+db.pass         = "correctme_db_password"   #overriden by env variable CORRECTME_DB_PASS
 
-speller.url     = "https://speller.yandex.net/services/spellservice.json/checkText"
-speller.enabled = true
+speller.url     = "https://speller.yandex.net/services/spellservice.json/checkText" #overriden by env variable CORRECTME_SPELLER_URL
+speller.enabled = true                      #overriden by env variable CORRECTME_SPELLER_ENABLED
