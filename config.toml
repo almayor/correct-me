@@ -1,7 +1,8 @@
 app.title       = "correct-me"
 app.description = "Submitting, reviewing, and improving message phrasing with built-in spellcheck"
-app.port        = 8080                      #overriden by env variable CORRECTME_APP_PORT
 app.version     = "0.1"
+app.host        = "localhost"               #overriden by env variable CORRECTME_APP_HOST
+app.port        = 8080                      #overriden by env variable CORRECTME_APP_PORT
 
 db.host         = "localhost"               #overriden by env variable CORRECTME_DB_HOST
 db.port         = 5432                      #overriden by env variable CORRECTME_DB_PORT

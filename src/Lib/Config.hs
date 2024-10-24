@@ -9,14 +9,16 @@ import System.Environment (lookupEnv)
 import Toml (TomlCodec, (.=))
 import qualified Toml
 import Network.URI (URI, parseURI)
-import Data.Text (Text, pack, unpack)
+import Data.Text (Text)
+import qualified Data.Text as T (pack, unpack)
 import Data.String (fromString)
 
 data AppConfig = AppConfig
     { appName         :: !Text
     , appDescription  :: !Text
-    , appPort         :: !Int
     , appVersion      :: !Text
+    , appHost         :: !ByteString
+    , appPort         :: !Int
     , dbHost          :: !ByteString
     , dbPort          :: !Int
     , dbName          :: !ByteString
@@ -30,15 +32,16 @@ data AppConfig = AppConfig
 uriCodec :: Toml.Key -> Toml.TomlCodec URI
 uriCodec = Toml.textBy bwd fwd
     where
-        bwd = pack . show
-        fwd = maybe (Left "Invalid URI") Right . parseURI . unpack
+        bwd = T.pack . show
+        fwd = maybe (Left "Invalid URI") Right . parseURI . T.unpack
 
 configCodec :: TomlCodec AppConfig
 configCodec = AppConfig
     <$> Toml.text "app.title"       .= appName
     <*> Toml.text "app.description" .= appDescription
-    <*> Toml.int "app.port"         .= appPort
     <*> Toml.text "app.version"     .= appVersion
+    <*> Toml.byteString "app.host"  .= appHost
+    <*> Toml.int "app.port"         .= appPort
     <*> Toml.byteString "db.host"   .= dbHost
     <*> Toml.int "db.port"          .= dbPort
     <*> Toml.byteString "db.name"   .= dbName
@@ -81,6 +84,7 @@ loadConfig = do
     config <- Toml.decodeFile configCodec configFile
 
     -- Override with environment variables if present
+    appHost <- overrideByteString "CORRECTME_APP_HOST" (appHost config)
     appPort <- overrideInt "CORRECTME_APP_PORT" (appPort config)
     dbHost <- overrideByteString "CORRECTME_DB_HOST" (dbHost config)
     dbPort <- overrideInt "CORRECTME_DB_PORT" (dbPort config)
@@ -91,7 +95,8 @@ loadConfig = do
     spellerUri <- overrideURI "CORRECTME_SPELLER_URL" (spellerUri config)
 
     return config
-        { appPort = appPort
+        { appHost = appHost
+        , appPort = appPort
         , dbHost = dbHost
         , dbPort = dbPort
         , dbName = dbName

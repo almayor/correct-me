@@ -3,6 +3,7 @@ module Lib.Swagger (
     SwaggerAPI,
     ) where
 
+import qualified Data.ByteString.Char8 as BS (pack, unpack)
 import Data.Swagger
 import Data.String (IsString(fromString))
 import Control.Lens
@@ -19,7 +20,7 @@ swaggerDoc config = toSwagger (Proxy @AppAPI)
     & info.title        .~ appName config
     & info.version      .~ appVersion config
     & info.description  ?~ appDescription config
-    & host              ?~ fromString ("localhost:" <> show (appPort config))
+    & host              ?~ fromString (BS.unpack (appHost config) <> ":" <> show (appPort config))
 
 type SwaggerAPI = SwaggerSchemaUI "swagger-ui" "swagger.json"
 
