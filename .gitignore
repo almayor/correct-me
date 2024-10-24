@@ -1,4 +1,4 @@
 .stack-work/
-.correct-me.cabal
+correct-me.cabal
 *.lock
 *~
