@@ -57,7 +57,7 @@ instance ToSample User where
 
 instance ToSample Phrase where
     toSamples _ = [
-          ("An open phrase", sampleOpenPhrase)
+          ("An open phrase ", sampleOpenPhrase)
         , ("A closed phrase", sampleClosedPhrase)
         ]
 
