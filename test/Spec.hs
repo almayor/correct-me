@@ -424,7 +424,6 @@ businessLogicSpec =
                     $ AlternativeReq "test_alternative1") (clientEnv port)
                 result `shouldSatisfy` isRight
 
-        describe "POST /api/phrase/:id/alternatives" $ do
             it "can't insert an alternative with an empty text" $ \port -> do
                 _ <- runClientM (registerC $ UserReq "test_user1" "test_pass1") (clientEnv port)
                 let basicAuth = BasicAuthData "test_user1" "test_pass1"
