@@ -300,7 +300,7 @@ One of the following:
     - `application/json;charset=utf-8`
     - `application/json`
 
-- An open phrase (`application/json;charset=utf-8`, `application/json`):
+- An open phrase  (`application/json;charset=utf-8`, `application/json`):
 
 ```json
 {"id":1,"author_id":123,"text":"This is a sample phrase.","created_at":"2022-08-10T18:00:00Z","is_open":true,"chosen_alt_id":null,"num_alts":1,"spell_check":[]}
@@ -609,4 +609,5 @@ One of the following:
 ```json
 ["/api/alternatives/301","/api/alternatives/305","/api/alternatives/323"]
 ```
+
 
