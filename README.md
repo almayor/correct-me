@@ -89,3 +89,4 @@ Github Actions have been set up to continuously
 - [ ] Use Redis to cache requests
 - [ ] Implement rate limiting to prevent abuse
 - [ ] Add monitoring and alerting for the application
+- [ ] Slim down Docker image by leveraging two-stage builds
