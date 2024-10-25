@@ -11,7 +11,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - CORRECTME_APP_PORT=8080
+      - CORRECTME_APP_PORT=${CORRECTME_APP_PORT:-8080}
+      - CORRECTME_APP_HOST=${CORRECTME_APP_HOST:-localhost}
       - CORRECTME_DB_HOST=postgres
       - CORRECTME_DB_USER=correctme_db_user
       - CORRECTME_DB_PASSWORD=correctme_db_password
