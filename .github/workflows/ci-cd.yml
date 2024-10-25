@@ -86,7 +86,7 @@ jobs:
     # Get updated API docs
     - name: Write docs
       run: |
-        docker run almayor/correct-me --output-docs > docs/api_docs.md
+        docker run almayor/correct-me --print-docs > docs/api_docs.md
 
     # Commit and push the updated file back to the repository
     - name: Commit and Push Documentation
