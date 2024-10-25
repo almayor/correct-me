@@ -57,7 +57,7 @@ jobs:
         docker-compose --version
     
     - name: Run tests inside Docker container
-      run: docker-compose --entrypoint stack run -T app test
+      run: docker-compose run -T --entrypoint stack app test
     
     - name: Push Docker image
       uses: docker/build-push-action@v5
