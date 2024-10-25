@@ -24,7 +24,7 @@ The API is protected by [BasicAuth](https://en.wikipedia.org/wiki/Basic_access_a
 
 ## Running the application
 
-You can run the application either with `stack` or using `docker-compose`. The API can be accessed at `localhost:8080`.
+You can run the application either with `stack` or using `docker-compose`. The API can be accessed at `localhost:8080` or at whatever host/port is specified in `config.toml`.
 
 ### Build manually
 
@@ -59,8 +59,7 @@ You can run the application either with `stack` or using `docker-compose`. The A
 I am using [hspec](https://hackage.haskell.org/package/hspec) for testing. You can run the tests as follows:
 
 ```sh
-docker-compose up
-docker-compose exec app stack test
+docker-compose run --entrypoint stack app test
 ```
 
 <details>
