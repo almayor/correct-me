@@ -17,63 +17,58 @@ jobs:
   run-tests-and-push-image:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Log in to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+    
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: all
       
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-        with:
-          platforms: all
-        
-      - name: Build and cache Docker image for linux/amd64 (no push)
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          tags: almayor/correct-me:latest
-          #caching intermediate layers
-          cache-from: type=registry,ref=almayor/correct-me:cache
-          cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
-          #don't push before testing but load to `docker image ls`
-          push: false
-          load: true
+    - name: Build and cache Docker image (no push)
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        tags: almayor/correct-me:latest
+        #caching intermediate layers
+        cache-from: type=registry,ref=almayor/correct-me:cache
+        cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
+        #don't push before testing but load to `docker image ls`
+        push: false
+        load: true
 
-      - name: List Docker images in cache
-        run: docker image ls
+    - name: List Docker images in cache
+      run: docker image ls
 
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-      
-      # - name: debug -- trying to run container
-      #   run: |
-      #     docker run
-      #     docker run almayor/correct-me:latest
-      
-      - name: Run tests inside Docker container
-        run: docker-compose run -T app stack test
-      
-      - name: Push Docker image for linux/amd64
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          tags: almayor/correct-me:latest
-          platforms: linux/amd64
-          cache-from: type=registry,ref=almayor/correct-me:cache
-          # push to the registry
-          push: true
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        docker-compose --version
+    
+    - name: Run tests inside Docker container
+      run: docker-compose --entrypoint stack run -T app test
+    
+    - name: Push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        tags: almayor/correct-me:latest
+        platforms: linux/amd64
+        cache-from: type=registry,ref=almayor/correct-me:cache
+        # push to the registry
+        push: true
   
   update-api-docs:
     needs: run-tests-and-push-image
@@ -91,8 +86,7 @@ jobs:
     # Get updated API docs
     - name: Write docs
       run: |
-        docker pull almayor/correct-me:latest
-        docker run almayor/correct-me:latest --output-docs docs/api_docs.md
+        docker run almayor/correct-me --output-docs > docs/api_docs.md
 
     # Commit and push the updated file back to the repository
     - name: Commit and Push Documentation

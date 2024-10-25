@@ -30,4 +30,4 @@ RUN stack build --test --no-run-tests
 
 EXPOSE 8080
 
-CMD ["/root/.local/bin/correct-me"]
+ENTRYPOINT ["/root/.local/bin/correct-me"]
