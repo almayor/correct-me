@@ -28,6 +28,7 @@ data AppConfig = AppConfig
     , spellerEnabled  :: !Bool
     , spellerUri      :: !URI
     }
+    deriving (Show, Eq)
 
 -- Define the TomlBiMap for URI
 uriCodec :: Toml.Key -> Toml.TomlCodec URI

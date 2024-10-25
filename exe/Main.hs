@@ -1,4 +1,5 @@
 import System.Exit
+import System.IO
 import Options.Applicative
 import Data.Semigroup ((<>))  -- For combining options
 import Control.Monad (when)   -- For the 'when' function
@@ -41,5 +42,6 @@ main = do
         exitSuccess
 
     config <- loadConfigFromFile (optConfig opts)
+    hPutStrLn stderr $ "Running with config: " ++ show config
     initDb config
     runServer config
