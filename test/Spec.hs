@@ -13,7 +13,6 @@ import Servant.API.Flatten (flatten)
 import Servant.Client
 import Test.Hspec
 import Test.Hspec.Wai hiding (pending, pendingWith)
-import Text.Regex.TDFA ((=~))
 
 import Lib
 import Lib.Api
@@ -57,23 +56,24 @@ chooseAlternativeC :: BasicAuthData -> AlternativeID -> ClientM LocPath
 
 registerC :<|> listUsersC :<|> getUserC :<|> listPhrasesByUserC :<|> listPhrasesC :<|> insertPhraseC :<|> getPhraseC :<|> listAlternativesByPhraseC :<|> insertAlternativeC :<|> listAlternativesC :<|> getAlternativeC :<|> chooseAlternativeC = client $ flatten (Proxy :: Proxy ClientAPI)
 
-matchRegex :: String -> String -> Bool
-matchRegex = flip (=~)
+application :: IO Application
+application = do
+    config <- loadConfig
+    initDb config -- initializing database from schema
+    getApplication config
 
 -- silencing output and disabling spell checker
 withServerWithoutSpeller :: (Warp.Port -> IO()) -> IO()
 withServerWithoutSpeller action = withModifiedEnv [("CORRECTME_SPELLER_ENABLED", "false")] $ 
     withServer action
 
+-- silencing output
 withServer :: (Warp.Port -> IO()) -> IO()
-withServer action = withSilencedOutput $ do
-    config <- loadConfig
-    initDb config -- initializing database from schema
-    application <- getApplication config
-    Warp.testWithApplication (pure application) action
+withServer action = withSilencedOutput $ Warp.testWithApplication application action
 
 publicSpec :: Spec
-publicSpec = with (withSilencedOutput(initDb >> getApplication)) $ do
+publicSpec =
+    with (withSilencedOutput application) $ do
          -- GET protected endpoints without authentication
         let endpoints = [
                   "/api/users"

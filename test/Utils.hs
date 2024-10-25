@@ -1,10 +1,11 @@
-module Utils (withModifiedEnv, withSilencedOutput, findMissing) where
+module Utils (withModifiedEnv, withSilencedOutput, findMissing, matchRegex) where
 
+import Control.Exception (bracket_, finally)
+import qualified Data.Set as Set
+import GHC.IO.Handle
 import System.Environment (getEnvironment, setEnv, unsetEnv)
 import System.IO
-import Control.Exception (bracket_, finally)
-import GHC.IO.Handle
-import qualified Data.Set as Set
+import Text.Regex.TDFA ((=~))
 
 -- A helper function to temporarily modify environment variables
 withModifiedEnv :: [(String, String)] -> IO () -> IO ()
@@ -66,3 +67,7 @@ findFirstMissingSet existingSet (x:xs)
 
 -- If the list covers the whole bounded range, this pattern match avoids non-exhaustive errors
 findFirstMissingSet _ [] = error "No missing element found within the bounded range"
+
+-- Useful helpfer obtained by flipping for convenience and specifying types
+matchRegex :: String -> String -> Bool
+matchRegex = flip (=~)
