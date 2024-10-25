@@ -22,9 +22,12 @@ RUN stack build --only-dependencies
 # Copy the rest of the application code
 COPY . .
 
-# Build the application
-RUN stack build
+# Build and install the application
+RUN stack build && stack install
+
+# Prebuild tests
+RUN stack build --test --no-run-tests
 
 EXPOSE 8080
 
-CMD ["/usr/local/bin/stack", "run"]
+CMD ["/root/.local/bin/correct-me"]
