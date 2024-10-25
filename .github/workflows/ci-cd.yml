@@ -40,13 +40,12 @@ jobs:
           context: .
           file: ./Dockerfile
           tags: almayor/correct-me:latest
-          platforms: linux/amd64
           #caching intermediate layers
           cache-from: type=registry,ref=almayor/correct-me:cache
           cache-to: type=registry,ref=almayor/correct-me:cache,mode=max
           #don't push before testing but load to `docker image ls`
-          # push: false
-          # load: true
+          push: false
+          load: true
 
       - name: List Docker images in cache
         run: docker image ls
