@@ -23,8 +23,8 @@ optionsParser = Options
         <> showDefault )
     <*> ( optional . strOption )
         ( long "output-docs" 
-        <> metavar "DOCS_OUTPUT"
-        <> help "Write API docs (markdown) to DOCS_OUTPUT and exit (optional)" )
+        <> metavar "PATH"
+        <> help "Write API docs (markdown) to PATH and exit (optional)" )
 
 optsParserInfo :: AppConfig -> ParserInfo Options
 optsParserInfo config = info (optionsParser <**> helper)
