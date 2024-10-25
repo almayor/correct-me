@@ -56,6 +56,9 @@ jobs:
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
       
+      - name: debug -- trying to run container
+        run: docker run almayor/correct-me:latest
+      
       - name: Run tests inside Docker container
         run: |
           docker-compose up -d
