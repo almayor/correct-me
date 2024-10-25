@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: almayor/correct-me:arm64
+    image: almayor/correct-me:latest
     pull_policy: if_not_present
     build:
       context: .
