@@ -9,8 +9,8 @@ import Data.Text (unpack) -- For converting a string to Text
 import Lib
 
 data Options = Options
-  { optConfig   :: FilePath
-  , optDocsDest :: Maybe FilePath
+  { optConfig     :: FilePath
+  , optPrintDocs  :: Bool
   }
 
 optionsParser :: Parser Options
@@ -22,10 +22,9 @@ optionsParser = Options
         <> value "config.toml"
         <> help "Path to the configuration file"
         <> showDefault )
-    <*> ( optional . strOption )
-        ( long "output-docs" 
-        <> metavar "PATH"
-        <> help "Write API docs (markdown) to PATH and exit (optional)" )
+    <*> switch
+        ( long "print-docs" 
+        <> help "Print API docs" )
 
 optsParserInfo :: AppConfig -> ParserInfo Options
 optsParserInfo config = info (optionsParser <**> helper)
@@ -37,8 +36,8 @@ main = do
     defaultConfig <- loadConfig
     opts <- execParser (optsParserInfo defaultConfig)
 
-    when (isJust $ optDocsDest opts) $ do
-        writeDocs . fromJust $ optDocsDest opts
+    when (optPrintDocs opts) $ do
+        putStrLn docsMarkdown
         exitSuccess
 
     config <- loadConfigFromFile (optConfig opts)

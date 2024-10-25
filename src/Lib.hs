@@ -2,7 +2,7 @@ module Lib
     ( runServer
     , initDb
     , getApplication
-    , writeDocs
+    , docsMarkdown
     , module Lib.Config
     ) where
 
@@ -104,8 +104,3 @@ initDb config = do
     env <- mkEnv config
     hPutStrLn stderr "Initializing and seeding database..."
     runAppAsIO env prepareSeededDb
-
--- | Write API docs to a file.
-writeDocs :: FilePath -> IO ()
-writeDocs path = writeFile path docsMarkdown
-
