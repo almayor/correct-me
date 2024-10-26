@@ -71,8 +71,8 @@ docker-compose run --entrypoint stack app test
 
 Github Actions have been set up to continuously
 1. test the project
-2. re-built a Docker image and push it to [Docker Hub](https://hub.docker.com/r/almayor/correct-me)
-3. update [API Documentation](docs/api_docs.md)
+2. re-build the Docker image and push it to [Docker Hub](https://hub.docker.com/r/almayor/correct-me)
+3. update the [API Documentation](docs/api_docs.md)
 
 ## API Documentation
 
