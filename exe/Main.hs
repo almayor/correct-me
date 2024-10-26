@@ -1,12 +1,11 @@
 import System.Exit
 import System.IO
 import Options.Applicative
-import Data.Semigroup ((<>))  -- For combining options
-import Control.Monad (when)   -- For the 'when' function
-import Data.Maybe (isJust, fromJust) -- For 'isJust' and 'fromJust'
-import Data.Text (unpack) -- For converting a string to Text
+import Data.Semigroup ((<>))
+import Control.Monad (when)
+import Data.Text (unpack)
 
-import Lib
+import Lib (loadConfigFromFile, runServer, initDb, docsMarkdown)
 
 data Options = Options
   { optConfig     :: FilePath
@@ -26,15 +25,14 @@ optionsParser = Options
         ( long "print-docs" 
         <> help "Print API docs" )
 
-optsParserInfo :: AppConfig -> ParserInfo Options
-optsParserInfo config = info (optionsParser <**> helper)
+optsParserInfo :: ParserInfo Options
+optsParserInfo = info (optionsParser <**> helper)
     ( fullDesc
-  <> progDesc (unpack $ appDescription config) )
+  <> progDesc "CorrectMe: A mini-service for reviewing message phrasing" )
 
 main :: IO ()
 main = do
-    defaultConfig <- loadConfig
-    opts <- execParser (optsParserInfo defaultConfig)
+    opts <- execParser optsParserInfo
 
     when (optPrintDocs opts) $ do
         putStrLn docsMarkdown
