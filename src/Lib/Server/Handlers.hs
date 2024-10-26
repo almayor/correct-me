@@ -112,7 +112,7 @@ getAlternativeH _ altId = do
 chooseAlternativeH :: User -> AlternativeID -> AppM LocPath
 chooseAlternativeH (User { userId }) altId = do
     alt <- execute alternativeGetSt altId >>= maybe (throwError NotFoundError) return
-    phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe (throwError InconsistentDataError) return
+    phrase <- execute phraseGetSt (altPhraseId alt) >>= maybe (throwError $ InternalError "Inconsistent database") return
     unless (phraseIsOpen phrase) $ throwError PhraseAlreadyClosedError
     when (phraseAuthorId phrase /= userId) $ throwError NotTheAuthorError
     execute phraseSetChosenAltSt (altPhraseId alt, altId)

@@ -20,7 +20,6 @@ data AppError =
     | InvalidContent String 
     | NotTheAuthorError
     | PhraseAlreadyClosedError
-    | InconsistentDataError
     | ExternalServiceError String
     | NotAuthenticatedError
     | DbError UsageError
@@ -34,7 +33,6 @@ toHttpError UserAlreadyExistsError = err409 { errBody = "User already exists" }
 toHttpError (InvalidContent e) = err400 { errBody = fromString e }
 toHttpError NotTheAuthorError = err403 { errBody = "Only author can do that" }
 toHttpError PhraseAlreadyClosedError = err409 { errBody = "Phrase is already closed" }
-toHttpError InconsistentDataError = err500 { errBody = "Inconsistent data" }
 toHttpError (DbError e) = err500 { errBody = fromString $ show e }
 toHttpError NotAuthenticatedError = err401 { errBody = "Not authenticated" }
 toHttpError (ExternalServiceError e) = err500 { errBody = fromString e }
