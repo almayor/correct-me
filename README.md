@@ -1,6 +1,6 @@
 # correct-me
 
-<img src="docs/logo/logo.png" alt="Logo" align="right" width="150" style="padding:10 px;"/>
+<img src="docs/logo/logo.png" alt="Logo" align="right" width="150" style="padding:15 px;"/>
 
 `correct-me` is a prototype backend API designed for team collaboration. It allows users to upload message formulations, suggest alternatives, and choose the best version. Each message is also checked for spelling errors using a service like Yandex Speller, with errors displayed for review.
 
