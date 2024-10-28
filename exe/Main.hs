@@ -20,15 +20,18 @@ optionsParser = Options
         <> metavar "CONFIG"
         <> value "config.toml"
         <> help "Path to the configuration file"
-        <> showDefault )
+        <> showDefault
+        )
     <*> switch
         ( long "print-docs" 
-        <> help "Print API docs" )
+        <> help "Print API docs"
+        )
 
 optsParserInfo :: ParserInfo Options
 optsParserInfo = info (optionsParser <**> helper)
     ( fullDesc
-  <> progDesc "CorrectMe: A mini-service for reviewing message phrasing" )
+    <> progDesc "CorrectMe: A mini-service for reviewing message phrasing"
+    )
 
 main :: IO ()
 main = do
